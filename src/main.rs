@@ -40,6 +40,7 @@ enum AddEntity {
         /// Project name
         name: String,
         /// Alias (repeatable)
+        #[arg(long)]
         alias: Vec<String>,
     },
     
@@ -59,7 +60,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::End => handle_end(),
 
         Command::Add {entity} => match entity {
-            AddEntity::Project{name, alias} => handle_add_entity(name)?,
+            AddEntity::Project{name, alias} => handle_add_project(name, alias)?,
             AddEntity::Person { name } => handle_add_entity(name)?,
         }
     }
@@ -93,5 +94,28 @@ fn handle_end() {
 fn handle_add_entity(name: String) -> Result<(), Box<dyn Error>> {
     println!("Added {} successfully!", name);
     
+    Ok(())
+}
+
+fn handle_add_project(name: String, aliases: Vec<String>) -> Result<(), Box<dyn Error>> {
+
+    let registry_path = Path::new("./sample/vault")    .join("registry.toml");
+    let mut registry = registry::Registry::load(&registry_path)?;
+
+    if registry.find_project(&name).is_some() {
+        
+        println!("Project {} already exists.", name);
+        return Ok(())
+    }
+
+    let new_project = registry::Project {
+        name: name.clone(),
+        aliases,
+        status: "active".into(),
+    };
+    registry.projects.push(new_project);
+    registry.save(&registry_path)?;
+    
+    println!("Added project `{}`.", name);
     Ok(())
 }

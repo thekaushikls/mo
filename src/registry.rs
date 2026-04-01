@@ -1,4 +1,4 @@
-use std::{error::Error, fs, path::Path};
+use std::{error::Error, fs, path::Path, string::String};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -31,5 +31,13 @@ impl Registry {
         let contents = toml::to_string_pretty(self)?;
         fs::write(path, contents)?;
         Ok(())
+    }
+    
+    pub fn find_project(&self, name: &str) -> Option<&Project> {
+        let needle = name.to_lowercase();
+        self.projects.iter().find(|p| {
+            p.name.to_lowercase() == needle
+                || p.aliases.iter().any(|a| a.to_lowercase() == needle)
+        })
     }
 }

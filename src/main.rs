@@ -16,6 +16,12 @@ enum Command {
         #[arg(long, default_value="./sample/vault")]
         path: String,
     },
+
+    /// Start work day
+    Start,
+
+    /// End work day
+    End,
 }
 
 
@@ -26,6 +32,14 @@ fn main() {
     match cli.command {
         Command::Init { path } => {
             println!("Initializing at: {}", path);
+        },
+
+        Command::Start => {
+            println!("Welcome back!");
+        }
+
+        Command::End => {
+            println!("Goodbye!");
         }
     }
 }

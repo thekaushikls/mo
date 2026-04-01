@@ -1,5 +1,4 @@
-use std::fs;
-use std::path::Path;
+use std::{error::Error, fs, path::Path};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -22,13 +21,13 @@ fn default_status() -> String {
 }
 
 impl Registry {
-    pub fn load(path: &Path) -> Result<Registry, Box<dyn std::error::Error>> {
+    pub fn load(path: &Path) -> Result<Registry, Box<dyn Error>> {
         let contents = fs::read_to_string(path)?;
         let registry: Registry = toml::from_str(&contents)?;
         Ok(registry)
     }
 
-    pub fn save(&self, path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn save(&self, path: &Path) -> Result<(), Box<dyn Error>> {
         let contents = toml::to_string_pretty(self)?;
         fs::write(path, contents)?;
         Ok(())

@@ -1,4 +1,5 @@
 mod registry;
+use std::{error::Error, fs, path::Path};
 use clap::{Parser, Subcommand};
 
 
@@ -25,22 +26,37 @@ enum Command {
     End,
 }
 
-
-
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
-
+    
     match cli.command {
-        Command::Init { path } => {
-            println!("Initializing at: {}", path);
-        },
-
-        Command::Start => {
-            println!("Welcome back!");
-        }
-
-        Command::End => {
-            println!("Goodbye!");
-        }
+        Command::Init { path } => handle_init(path)?,
+        Command::Start => handle_start(),
+        Command::End => handle_end(),
     }
+
+    Ok(())
+}
+
+fn handle_init(path: String) -> Result<(), Box<dyn Error>> {
+    let registry_path = Path::new(&path).join("registry.toml");
+
+    if registry_path.exists() {
+        println!("Registry already exists at: {}", registry_path.display());
+    } else {
+        fs::create_dir_all(&path)?;
+        let registry = registry::Registry::default();
+        registry.save(&registry_path)?;
+        println!("Created registry at: {}", registry_path.display());
+    }
+
+    Ok(())
+}
+
+fn handle_start() {
+    println!("Welcome back!");
+}
+
+fn handle_end() {
+    println!("Goodbye!");
 }

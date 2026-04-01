@@ -1,3 +1,4 @@
+mod registry;
 use clap::{Parser, Subcommand};
 
 

@@ -24,6 +24,30 @@ enum Command {
 
     /// End work day
     End,
+
+    /// Add an entity (Project) to the registry
+    Add {
+        #[command(subcommand)]
+        entity: AddEntity,
+    }
+}
+
+
+#[derive(Subcommand)]
+enum AddEntity {
+    /// Add a project
+    Project {
+        /// Project name
+        name: String,
+        /// Alias (repeatable)
+        alias: Vec<String>,
+    },
+    
+    /// Add a person
+    Person {
+        /// Person name
+        name: String,
+    },
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -33,6 +57,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Init { path } => handle_init(path)?,
         Command::Start => handle_start(),
         Command::End => handle_end(),
+
+        Command::Add {entity} => match entity {
+            AddEntity::Project{name, alias} => handle_add_entity(name)?,
+            AddEntity::Person { name } => handle_add_entity(name)?,
+        }
     }
 
     Ok(())
@@ -59,4 +88,10 @@ fn handle_start() {
 
 fn handle_end() {
     println!("Goodbye!");
+}
+
+fn handle_add_entity(name: String) -> Result<(), Box<dyn Error>> {
+    println!("Added {} successfully!", name);
+    
+    Ok(())
 }

@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 pub struct Registry {
     #[serde(default)]
     pub projects: Vec<Project>,
+    #[serde(default)]
+    pub people: Vec<Person>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14,6 +16,13 @@ pub struct Project {
     pub aliases: Vec<String>,
     #[serde(default = "default_status")]
     pub status: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Person {
+    pub name: String,
+    #[serde(default)]
+    pub aliases: Vec<String>,
 }
 
 fn default_status() -> String {
@@ -36,6 +45,14 @@ impl Registry {
     pub fn find_project(&self, name: &str) -> Option<&Project> {
         let needle = name.to_lowercase();
         self.projects.iter().find(|p| {
+            p.name.to_lowercase() == needle
+                || p.aliases.iter().any(|a| a.to_lowercase() == needle)
+        })
+    }
+
+    pub fn find_person(&self, name: &str) -> Option<&Person> {
+        let needle = name.to_lowercase();
+        self.people.iter().find(|p| {
             p.name.to_lowercase() == needle
                 || p.aliases.iter().any(|a| a.to_lowercase() == needle)
         })

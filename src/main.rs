@@ -48,6 +48,9 @@ enum AddEntity {
     Person {
         /// Person name
         name: String,
+        /// Alias (repeatable)
+        #[arg(long)]
+        alias: Vec<String>,
     },
 }
 
@@ -61,7 +64,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         Command::Add {entity} => match entity {
             AddEntity::Project{name, alias} => handle_add_project(name, alias)?,
-            AddEntity::Person { name } => handle_add_entity(name)?,
+            AddEntity::Person {name, alias} => handle_add_person(name, alias)?,
         }
     }
 
@@ -91,15 +94,9 @@ fn handle_end() {
     println!("Goodbye!");
 }
 
-fn handle_add_entity(name: String) -> Result<(), Box<dyn Error>> {
-    println!("Added {} successfully!", name);
-    
-    Ok(())
-}
-
 fn handle_add_project(name: String, aliases: Vec<String>) -> Result<(), Box<dyn Error>> {
 
-    let registry_path = Path::new("./sample/vault")    .join("registry.toml");
+    let registry_path = Path::new("./sample/vault").join("registry.toml");
     let mut registry = registry::Registry::load(&registry_path)?;
 
     if registry.find_project(&name).is_some() {
@@ -117,5 +114,25 @@ fn handle_add_project(name: String, aliases: Vec<String>) -> Result<(), Box<dyn 
     registry.save(&registry_path)?;
     
     println!("Added project `{}`.", name);
+    Ok(())
+}
+
+fn handle_add_person(name: String, aliases: Vec<String>) -> Result<(), Box<dyn Error>> {
+    let registry_path = Path::new("./sample/vault").join("registry.toml");
+    let mut registry = registry::Registry::load(&registry_path)?;
+
+    if registry.find_person(&name).is_some() {
+        println!("Person {} already exists.", name);
+        return Ok(())
+    }
+
+    let new_person = registry::Person {
+        name: name.clone(),
+        aliases,
+    };
+    registry.people.push(new_person);
+    registry.save(&registry_path)?;
+
+    println!("Added person `{}`.", name);
     Ok(())
 }

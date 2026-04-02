@@ -1,6 +1,8 @@
 mod registry;
+mod weekly;
 
 use std::{error::Error, fs, path::Path};
+use chrono::{Local};
 use clap::{Parser, Subcommand};
 
 
@@ -30,7 +32,12 @@ enum Command {
     Add {
         #[command(subcommand)]
         entity: AddEntity,
-    }
+    },
+
+    /// Add a work entry
+    Work {
+        message: String,
+    },
 }
 
 
@@ -62,6 +69,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Init { path } => handle_init(path)?,
         Command::Login => handle_login(),
         Command::Logout => handle_logout(),
+        Command::Work { message } => handle_work(message)?,
 
         Command::Add {entity} => match entity {
             AddEntity::Project{name, alias} => handle_add_project(name, alias)?,
@@ -97,6 +105,46 @@ fn handle_login() {
 
 fn handle_logout() {
     println!("Goodbye!");
+}
+
+fn handle_work(message: String) -> Result<(), Box<dyn Error>> {
+    println!("Handling mo work - {}...", message);
+
+    let registry = registry::Registry::load()?;
+    let now = Local::now();
+    
+    let today = now.date_naive();
+    let time = now.format("%H:%M").to_string();
+
+    let vault = Path::new(&registry.vault.path);
+    let file_path = weekly::ensure_weekly_file(vault, today)?;
+
+    let mut content = fs::read_to_string(&file_path)?;
+    let date_str = today.format("%Y-%m-%d").to_string();
+
+    // Find today's section and append entry after the "-" line
+    let section_header = format!(" {}\n", date_str);
+    if let Some(pos) = content.find(&section_header) {
+        // Find the "-" placeholder line after the header
+        if let Some(dash_pos) = content[pos..].find("\n-\n") {
+            let insert_at = pos + dash_pos + 1;
+            let entry = format!("- {} {}\n", time, message);
+            content.replace_range(insert_at..insert_at + 2, &entry);
+        } else {
+            // No placeholder dash, just append before next section or end
+            let entry = format!("- {} {}\n", time, message);
+            if let Some(next_section) = content[pos + 1..].find("\n## ") {
+                let insert_at = pos + 1 + next_section + 1;
+                content.insert_str(insert_at, &entry);
+            } else {
+                content.push_str(&entry);
+            }
+        }
+    }
+
+    fs::write(&file_path, &content)?;
+    println!("{} {}", time, message);
+    Ok(())
 }
 
 fn handle_add_project(name: String, aliases: Vec<String>) -> Result<(), Box<dyn Error>> {

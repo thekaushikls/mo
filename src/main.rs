@@ -1,4 +1,5 @@
 mod registry;
+
 use std::{error::Error, fs, path::Path};
 use clap::{Parser, Subcommand};
 
@@ -20,10 +21,10 @@ enum Command {
     },
 
     /// Start work day
-    Start,
+    Login,
 
     /// End work day
-    End,
+    Logout,
 
     /// Add an entity (Project) to the registry
     Add {
@@ -59,8 +60,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     match cli.command {
         Command::Init { path } => handle_init(path)?,
-        Command::Start => handle_start(),
-        Command::End => handle_end(),
+        Command::Login => handle_login(),
+        Command::Logout => handle_logout(),
 
         Command::Add {entity} => match entity {
             AddEntity::Project{name, alias} => handle_add_project(name, alias)?,
@@ -72,32 +73,34 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn handle_init(path: String) -> Result<(), Box<dyn Error>> {
-    let registry_path = Path::new(&path).join("registry.toml");
+    let registry_path = Path::new("mo.toml");
 
     if registry_path.exists() {
-        println!("Registry already exists at: {}", registry_path.display());
+        println!("mo.toml already exists at");
     } else {
         fs::create_dir_all(&path)?;
-        let registry = registry::Registry::default();
-        registry.save(&registry_path)?;
+        let registry = registry::Registry {
+            vault: registry::VaultConfig { path },
+            ..Default::default()
+        };
+        
+        registry.save()?;
         println!("Created registry at: {}", registry_path.display());
     }
 
     Ok(())
 }
 
-fn handle_start() {
+fn handle_login() {
     println!("Welcome back!");
 }
 
-fn handle_end() {
+fn handle_logout() {
     println!("Goodbye!");
 }
 
 fn handle_add_project(name: String, aliases: Vec<String>) -> Result<(), Box<dyn Error>> {
-
-    let registry_path = Path::new("./sample/vault").join("registry.toml");
-    let mut registry = registry::Registry::load(&registry_path)?;
+    let mut registry = registry::Registry::load()?;
 
     if registry.find_project(&name).is_some() {
         
@@ -111,15 +114,14 @@ fn handle_add_project(name: String, aliases: Vec<String>) -> Result<(), Box<dyn 
         status: "active".into(),
     };
     registry.projects.push(new_project);
-    registry.save(&registry_path)?;
+    registry.save()?;
     
     println!("Added project `{}`.", name);
     Ok(())
 }
 
 fn handle_add_person(name: String, aliases: Vec<String>) -> Result<(), Box<dyn Error>> {
-    let registry_path = Path::new("./sample/vault").join("registry.toml");
-    let mut registry = registry::Registry::load(&registry_path)?;
+    let mut registry = registry::Registry::load()?;
 
     if registry.find_person(&name).is_some() {
         println!("Person {} already exists.", name);
@@ -131,7 +133,7 @@ fn handle_add_person(name: String, aliases: Vec<String>) -> Result<(), Box<dyn E
         aliases,
     };
     registry.people.push(new_person);
-    registry.save(&registry_path)?;
+    registry.save()?;
 
     println!("Added person `{}`.", name);
     Ok(())

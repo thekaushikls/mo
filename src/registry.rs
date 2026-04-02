@@ -1,8 +1,14 @@
-use std::{error::Error, fs, path::Path, string::String};
+use std::{error::Error, fs, path::PathBuf, string::String};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
+pub struct VaultConfig {
+    pub path: String,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Registry {
+    pub vault: VaultConfig,
     #[serde(default)]
     pub projects: Vec<Project>,
     #[serde(default)]
@@ -30,15 +36,28 @@ fn default_status() -> String {
 }
 
 impl Registry {
-    pub fn load(path: &Path) -> Result<Registry, Box<dyn Error>> {
-        let contents = fs::read_to_string(path)?;
+    pub fn load() -> Result<Registry, Box<dyn Error>> {
+        let local = PathBuf::from("mo.toml");
+        let global = dirs::config_dir()
+            .map(|d| d.join("mo").join("mo.toml"))
+            .unwrap_or_default();
+
+        let path = if local.exists() {
+            local
+        } else if global.exists() {
+            global
+        } else {
+            return Err("No mo.toml found. Run `mo init` first.".into());
+        };
+
+        let contents = fs::read_to_string(&path)?;
         let registry: Registry = toml::from_str(&contents)?;
         Ok(registry)
     }
 
-    pub fn save(&self, path: &Path) -> Result<(), Box<dyn Error>> {
+    pub fn save(&self) -> Result<(), Box<dyn Error>> {
         let contents = toml::to_string_pretty(self)?;
-        fs::write(path, contents)?;
+        fs::write("mo.toml", contents)?;
         Ok(())
     }
     

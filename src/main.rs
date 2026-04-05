@@ -23,7 +23,15 @@ enum Command {
     },
 
     /// Start work day
-    Login,
+    Login {
+        #[arg(long)]
+        feeling: Option<String>,
+    },
+
+    /// How are you feeling?
+    Feeling {
+        feeling: String
+    },
 
     /// End work day
     Logout,
@@ -101,8 +109,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     match cli.command {
         Command::Init { path } => handle_init(path)?,
-        Command::Login => handle_login()?,
+        Command::Login { feeling } => handle_login(feeling)?,
         Command::Logout => handle_logout()?,
+        Command::Feeling { feeling } => handle_feeling(feeling)?,
         Command::Work { message, flags } => handle_work(message, flags)?,
         
         Command::Add {entity} => match entity {
@@ -133,7 +142,7 @@ fn handle_init(path: String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn handle_login() -> Result<(), Box<dyn Error>> {
+fn handle_login(feeling: Option<String>) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
@@ -141,8 +150,23 @@ fn handle_login() -> Result<(), Box<dyn Error>> {
     let line = format!("{}|login", now.to_rfc3339());
     weekly::append_log(vault, &line)?;
     println!("Welcome back!");
+    
+    if let Some(feeling) = feeling {
+        handle_feeling(feeling)?;
+    }
+    
     Ok(())
     
+}
+
+fn handle_feeling(feeling: String) -> Result<(), Box<dyn Error>> {
+    let registry = registry::Registry::load()?;
+    let vault = Path::new(&registry.vault.path);
+    let now = Local::now();
+    
+    let line = format!("{}|mood|{}", now.to_rfc3339(), feeling);
+    weekly::append_log(vault, &line)?;
+    Ok(())
 }
 
 fn handle_logout() -> Result<(), Box<dyn Error>> {

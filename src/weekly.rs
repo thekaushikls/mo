@@ -37,6 +37,13 @@ pub fn weekly_file_path(vault: &Path, date: NaiveDate) -> PathBuf {
     vault.join("weekly").join(format!("{}.md", week_label))
 }
 
+/// Get log file path
+pub fn log_file_path(vault: &Path, date: NaiveDate) -> PathBuf {
+    let monday = week_monday(date);
+    let week_label = monday.format("%G-W%V").to_string();    
+    vault.join("logs").join(format!("{}.log", week_label))
+}
+
 /// Ensure weekly file exists
 pub fn ensure_weekly_file(vault: &Path, date: NaiveDate) -> Result<PathBuf, Box<dyn Error>> {
     let path = weekly_file_path(vault, date);
@@ -46,4 +53,22 @@ pub fn ensure_weekly_file(vault: &Path, date: NaiveDate) -> Result<PathBuf, Box<
         fs::write(&path, &content)?;
     }
     Ok(path)
+}
+
+/// Append to log file
+pub fn append_log(vault: &Path, line: &str) -> Result<(), Box<dyn Error>> {
+
+    let today = Local::now().date_naive();
+    let path = log_file_path(vault, today);
+    fs::create_dir_all(path.parent().unwrap())?;
+    
+    use std::fs::OpenOptions;
+    use std::io::Write;
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)?;
+
+    writeln!(file, "{}", line)?;
+    Ok(())
 }

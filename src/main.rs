@@ -67,9 +67,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     match cli.command {
         Command::Init { path } => handle_init(path)?,
-        Command::Login => handle_login(),
-        Command::Logout => handle_logout(),
-        Command::Work { message } => handle_work(message)?,
+        Command::Login => handle_login()?,
+        Command::Logout => handle_logout()?,
 
         Command::Add {entity} => match entity {
             AddEntity::Project{name, alias} => handle_add_project(name, alias)?,
@@ -99,22 +98,28 @@ fn handle_init(path: String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn handle_login() {
-    println!("Welcome back!");
-}
-
-fn handle_logout() {
-    println!("Goodbye!");
-}
-
-fn handle_work(message: String) -> Result<(), Box<dyn Error>> {
-    println!("Handling mo work - {}...", message);
-
+fn handle_login() -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
+    let vault = Path::new(&registry.vault.path);
     let now = Local::now();
     
-    let today = now.date_naive();
-    let time = now.format("%H:%M").to_string();
+    let line = format!("{}|login", now.to_rfc3339());
+    weekly::append_log(vault, &line)?;
+    println!("Welcome back!");
+    Ok(())
+
+}
+
+fn handle_logout() -> Result<(), Box<dyn Error>> {
+    let registry = registry::Registry::load()?;
+    let vault = Path::new(&registry.vault.path);
+    let now = Local::now();
+    
+    let line = format!("{}|logout", now.to_rfc3339());
+    weekly::append_log(vault, &line)?;
+    println!("Goodbye!");
+    Ok(())
+}
 
     let vault = Path::new(&registry.vault.path);
     let file_path = weekly::ensure_weekly_file(vault, today)?;

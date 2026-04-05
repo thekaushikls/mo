@@ -37,9 +37,40 @@ enum Command {
     /// Add a work entry
     Work {
         message: String,
+        #[command(flatten)]
+        flags: WorkFlags,
     },
 }
 
+#[derive(clap::Args)]
+struct WorkFlags {
+    #[arg(long)]
+    blocked: bool,
+    #[arg(long)]
+    done: bool,
+    #[arg(long)]
+    feature: bool,
+    #[arg(long)]
+    meeting: bool,
+    #[arg(long)]
+    todo: bool,
+    #[arg(long)]
+    unplanned: bool,
+}
+
+impl WorkFlags {
+    fn to_vec(&self) -> Vec<&str> {
+        let mut flags = Vec::new();
+        if self.blocked { flags.push("blocked"); }
+        if self.done { flags.push("done"); }
+        if self.feature { flags.push("feature"); }
+        if self.meeting { flags.push("meeting"); }
+        if self.todo { flags.push("todo"); }
+        if self.unplanned { flags.push("unplanned"); }
+
+        flags
+    }
+}
 
 #[derive(Subcommand)]
 enum AddEntity {
@@ -69,7 +100,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Init { path } => handle_init(path)?,
         Command::Login => handle_login()?,
         Command::Logout => handle_logout()?,
-
+        Command::Work { message, flags } => handle_work(message, flags)?,
+        
         Command::Add {entity} => match entity {
             AddEntity::Project{name, alias} => handle_add_project(name, alias)?,
             AddEntity::Person {name, alias} => handle_add_person(name, alias)?,
@@ -107,7 +139,7 @@ fn handle_login() -> Result<(), Box<dyn Error>> {
     weekly::append_log(vault, &line)?;
     println!("Welcome back!");
     Ok(())
-
+    
 }
 
 fn handle_logout() -> Result<(), Box<dyn Error>> {
@@ -121,34 +153,18 @@ fn handle_logout() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+fn handle_work(message: String, flags: WorkFlags) -> Result<(), Box<dyn Error>> {
+    let registry = registry::Registry::load()?;
+    let now = Local::now();
     let vault = Path::new(&registry.vault.path);
-    let file_path = weekly::ensure_weekly_file(vault, today)?;
 
-    let mut content = fs::read_to_string(&file_path)?;
-    let date_str = today.format("%Y-%m-%d").to_string();
-
-    // Find today's section and append entry after the "-" line
-    let section_header = format!(" {}\n", date_str);
-    if let Some(pos) = content.find(&section_header) {
-        // Find the "-" placeholder line after the header
-        if let Some(dash_pos) = content[pos..].find("\n-\n") {
-            let insert_at = pos + dash_pos + 1;
-            let entry = format!("- {} {}\n", time, message);
-            content.replace_range(insert_at..insert_at + 2, &entry);
-        } else {
-            // No placeholder dash, just append before next section or end
-            let entry = format!("- {} {}\n", time, message);
-            if let Some(next_section) = content[pos + 1..].find("\n## ") {
-                let insert_at = pos + 1 + next_section + 1;
-                content.insert_str(insert_at, &entry);
-            } else {
-                content.push_str(&entry);
-            }
-        }
+    let mut line = format!("{}|work|{}", now.to_rfc3339(), message);
+    let flag_list = flags.to_vec();
+    if !flag_list.is_empty() {
+        line.push_str(&format!("|flags={}", flag_list.join(",")));
     }
 
-    fs::write(&file_path, &content)?;
-    println!("{} {}", time, message);
+    weekly::append_log(vault, &line)?;
     Ok(())
 }
 

@@ -56,6 +56,8 @@ struct WorkFlags {
     todo: bool,
     #[arg(long)]
     unplanned: bool,
+    #[arg(long)]
+    urgent: bool,
 }
 
 impl WorkFlags {
@@ -67,6 +69,7 @@ impl WorkFlags {
         if self.meeting { flags.push("meeting"); }
         if self.todo { flags.push("todo"); }
         if self.unplanned { flags.push("unplanned"); }
+        if self.urgent { flags.push("urgent"); }
 
         flags
     }

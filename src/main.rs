@@ -26,7 +26,7 @@ enum Command {
     /// Initialize a new registry
     Init {
         /// Path for the registry directory
-        #[arg(long, default_value="./sample/vault")]
+        #[arg(long, default_value=".")]
         path: String,
     },
 

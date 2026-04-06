@@ -1,9 +1,10 @@
 mod registry;
 mod weekly;
 
-use std::{error::Error, fs, path::Path};
+use std::{error::Error, fs, io::stdout, path::Path};
 use chrono::{Local};
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
+use clap_complete::{generate, Shell};
 
 
 #[derive(Parser)]
@@ -15,6 +16,13 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Generate shell completions
+    #[command(hide = true)]
+    Completions {
+        /// Shell type (bash, zsh, fish)
+        shell: Shell,
+    },
+
     /// Initialize a new registry
     Init {
         /// Path for the registry directory
@@ -33,6 +41,13 @@ enum Command {
         feeling: String
     },
 
+    /// Add a work entry
+    Work {
+        message: String,
+        #[command(flatten)]
+        flags: WorkFlags,
+    },
+
     /// End work day
     Logout,
 
@@ -40,13 +55,6 @@ enum Command {
     Add {
         #[command(subcommand)]
         entity: AddEntity,
-    },
-
-    /// Add a work entry
-    Work {
-        message: String,
-        #[command(flatten)]
-        flags: WorkFlags,
     },
 }
 
@@ -108,11 +116,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
     
     match cli.command {
+        Command::Completions { shell } => {
+            generate(shell, &mut Cli::command(), "mo", &mut stdout());
+        }
         Command::Init { path } => handle_init(path)?,
         Command::Login { feeling } => handle_login(feeling)?,
-        Command::Logout => handle_logout()?,
         Command::Feeling { feeling } => handle_feeling(feeling)?,
         Command::Work { message, flags } => handle_work(message, flags)?,
+        Command::Logout => handle_logout()?,
         
         Command::Add {entity} => match entity {
             AddEntity::Project{name, alias} => handle_add_project(name, alias)?,
@@ -122,6 +133,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
+
+// All Handlers
 
 fn handle_init(path: String) -> Result<(), Box<dyn Error>> {
     let registry_path = Path::new("mo.toml");
@@ -164,7 +177,22 @@ fn handle_feeling(feeling: String) -> Result<(), Box<dyn Error>> {
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
     
-    let line = format!("{}|mood|{}", now.to_rfc3339(), feeling);
+    let line = format!("{}|feeling|{}", now.to_rfc3339(), feeling);
+    weekly::append_log(vault, &line)?;
+    Ok(())
+}
+
+fn handle_work(message: String, flags: WorkFlags) -> Result<(), Box<dyn Error>> {
+    let registry = registry::Registry::load()?;
+    let vault = Path::new(&registry.vault.path);
+    let now = Local::now();
+
+    let mut line = format!("{}|work|{}", now.to_rfc3339(), message);
+    let flag_list = flags.to_vec();
+    if !flag_list.is_empty() {
+        line.push_str(&format!("|flags={}", flag_list.join(",")));
+    }
+
     weekly::append_log(vault, &line)?;
     Ok(())
 }
@@ -177,21 +205,6 @@ fn handle_logout() -> Result<(), Box<dyn Error>> {
     let line = format!("{}|logout", now.to_rfc3339());
     weekly::append_log(vault, &line)?;
     println!("Goodbye!");
-    Ok(())
-}
-
-fn handle_work(message: String, flags: WorkFlags) -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-    let now = Local::now();
-    let vault = Path::new(&registry.vault.path);
-
-    let mut line = format!("{}|work|{}", now.to_rfc3339(), message);
-    let flag_list = flags.to_vec();
-    if !flag_list.is_empty() {
-        line.push_str(&format!("|flags={}", flag_list.join(",")));
-    }
-
-    weekly::append_log(vault, &line)?;
     Ok(())
 }
 

@@ -57,7 +57,6 @@ pub fn log_file_path(vault: &Path, date: NaiveDate) -> PathBuf {
 
 /// Append to log file
 pub fn append_log(vault: &Path, line: &str) -> Result<(), Box<dyn Error>> {
-
     let today = Local::now().date_naive();
     let path = log_file_path(vault, today);
     fs::create_dir_all(path.parent().unwrap())?;
@@ -71,4 +70,20 @@ pub fn append_log(vault: &Path, line: &str) -> Result<(), Box<dyn Error>> {
 
     writeln!(file, "{}", line)?;
     Ok(())
+}
+
+/// Read from log file
+pub fn read_lines(vault: &Path, count: usize) -> Result<Vec<String>, Box<dyn Error>> {
+    let today = Local::now().date_naive();
+    let path = log_file_path(vault, today);
+
+    if !path.exists() { return Ok(vec![]); }
+
+    let contents = fs::read_to_string(&path);
+    let lines: Vec<String> = contents?.lines()
+                                .filter(|l| !l.is_empty())
+                                .map(String::from)
+                                .collect();
+    let start = if lines.len() > count { lines.len() - count } else { 0 };
+    Ok(lines[start..].to_vec())
 }

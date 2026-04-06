@@ -48,6 +48,12 @@ enum Command {
         flags: WorkFlags,
     },
 
+    /// Show recent entries (default: 5)
+    Log {
+        #[arg(default_value = "5")]
+        count: usize,
+    },
+    
     /// End work day
     Logout,
 
@@ -123,6 +129,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Login { feeling } => handle_login(feeling)?,
         Command::Feeling { feeling } => handle_feeling(feeling)?,
         Command::Work { message, flags } => handle_work(message, flags)?,
+        Command::Log { count} => handle_log(count)?,
         Command::Logout => handle_logout()?,
         
         Command::Add {entity} => match entity {
@@ -194,6 +201,23 @@ fn handle_work(message: String, flags: WorkFlags) -> Result<(), Box<dyn Error>> 
     }
 
     weekly::append_log(vault, &line)?;
+    Ok(())
+}
+
+fn handle_log(count: usize) -> Result<(), Box<dyn Error>> {
+    let registry = registry::Registry::load()?;
+    let vault = Path::new(&registry.vault.path);
+    let lines = weekly::read_lines(vault, count)?;
+
+    if lines.is_empty() {
+        println!("No entries this week.");
+        return Ok(());
+    }
+
+    for line in &lines {
+        println!("{}", line);
+    }
+    
     Ok(())
 }
 

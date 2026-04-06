@@ -51,7 +51,7 @@ enum Command {
     /// Show recent entries (default: 5)
     Log {
         #[arg(default_value = "5")]
-        count: usize,
+        arg: String,
     },
     
     /// End work day
@@ -129,7 +129,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Login { feeling } => handle_login(feeling)?,
         Command::Feeling { feeling } => handle_feeling(feeling)?,
         Command::Work { message, flags } => handle_work(message, flags)?,
-        Command::Log { count} => handle_log(count)?,
+        Command::Log { arg} => handle_log(arg)?,
         Command::Logout => handle_logout()?,
         
         Command::Add {entity} => match entity {
@@ -204,9 +204,17 @@ fn handle_work(message: String, flags: WorkFlags) -> Result<(), Box<dyn Error>> 
     Ok(())
 }
 
-fn handle_log(count: usize) -> Result<(), Box<dyn Error>> {
+fn handle_log(arg: String) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
+    
+    if arg == "file" {
+        let today = Local::now().date_naive();
+        println!("{}", weekly::log_file_path(vault, today).display());
+        return Ok(());
+    }
+    
+    let count: usize = arg.parse().unwrap_or(5);
     let lines = weekly::read_lines(vault, count)?;
 
     if lines.is_empty() {

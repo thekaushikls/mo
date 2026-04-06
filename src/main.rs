@@ -8,7 +8,7 @@ use clap_complete::{generate, Shell};
 
 
 #[derive(Parser)]
-#[command(name="mo", about="CLI tool to log work")]
+#[command(name="mo", about="CLI tool to log work", version)]
 struct Cli {
     #[command(subcommand)]
     command: Command,

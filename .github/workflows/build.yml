@@ -10,11 +10,11 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            artifact: mo-x86_64-unknown-linux-gnu
+            artifact: mo-linux
 
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact: mox86_64-pc-windows-msvc
+            artifact: mo-windows
 
     runs-on: ${{ matrix.os }}
 

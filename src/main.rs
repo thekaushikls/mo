@@ -85,6 +85,8 @@ struct WorkFlags {
     #[arg(long)]
     meeting: bool,
     #[arg(long)]
+    now: bool,
+    #[arg(long)]
     todo: bool,
     #[arg(long)]
     unplanned: bool,
@@ -99,6 +101,7 @@ impl WorkFlags {
         if self.done { flags.push("done"); }
         if self.feature { flags.push("feature"); }
         if self.meeting { flags.push("meeting"); }
+        if self.now { flags.push("now"); }
         if self.todo { flags.push("todo"); }
         if self.unplanned { flags.push("unplanned"); }
         if self.urgent { flags.push("urgent"); }
@@ -179,7 +182,7 @@ fn handle_login(feeling: Option<String>) -> Result<(), Box<dyn Error>> {
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
     
-    let line = format!("{}|login", now.to_rfc3339());
+    let line = format!("{}|login", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string());
     weekly::append_log(vault, &line)?;
     println!("Welcome back!");
     
@@ -196,7 +199,7 @@ fn handle_feeling(feeling: String) -> Result<(), Box<dyn Error>> {
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
     
-    let line = format!("{}|feeling|{}", now.to_rfc3339(), feeling);
+    let line = format!("{}|feeling|{}", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(), feeling);
     weekly::append_log(vault, &line)?;
     Ok(())
 }
@@ -206,7 +209,7 @@ fn handle_work(message: String, flags: WorkFlags) -> Result<(), Box<dyn Error>> 
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
 
-    let mut line = format!("{}|work|{}", now.to_rfc3339(), message);
+    let mut line = format!("{}|work|{}", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(), message);
     let flag_list = flags.to_vec();
     if !flag_list.is_empty() {
         line.push_str(&format!("|flags={}", flag_list.join(",")));
@@ -221,7 +224,7 @@ fn handle_note(message: String) -> Result<(), Box<dyn Error>> {
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
 
-    let line = format!("{}|note|{}", now.to_rfc3339(), message);
+    let line = format!("{}|note|{}", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(), message);
     weekly::append_log(vault, &line)?;
     Ok(())
 }
@@ -231,7 +234,7 @@ fn handle_feedback(message: String) -> Result<(), Box<dyn Error>> {
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
 
-    let line = format!("{}|feedback|{}", now.to_rfc3339(), message);
+    let line = format!("{}|feedback|{}", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(), message);
     weekly::append_log(vault, &line)?;
     Ok(())
 }
@@ -266,7 +269,7 @@ fn handle_logout() -> Result<(), Box<dyn Error>> {
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
     
-    let line = format!("{}|logout", now.to_rfc3339());
+    let line = format!("{}|logout", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string());
     weekly::append_log(vault, &line)?;
     println!("Goodbye!");
     Ok(())

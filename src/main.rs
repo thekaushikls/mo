@@ -216,10 +216,7 @@ fn handle_login(feeling: Option<String>) -> Result<(), Box<dyn Error>> {
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
 
-    let line = format!(
-        "{}|login",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string()
-    );
+    let line = format!("{}|login", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"));
     weekly::append_log(vault, &line)?;
     println!("Welcome back!");
 
@@ -237,7 +234,7 @@ fn handle_feeling(feeling: String) -> Result<(), Box<dyn Error>> {
 
     let line = format!(
         "{}|feeling|{}",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(),
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
         feeling
     );
     weekly::append_log(vault, &line)?;
@@ -251,7 +248,7 @@ fn handle_work(message: String, flags: WorkFlags) -> Result<(), Box<dyn Error>> 
 
     let mut line = format!(
         "{}|work|{}",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(),
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
         message
     );
     let flag_list = flags.to_vec();
@@ -270,7 +267,7 @@ fn handle_note(message: String) -> Result<(), Box<dyn Error>> {
 
     let line = format!(
         "{}|note|{}",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(),
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
         message
     );
     weekly::append_log(vault, &line)?;
@@ -284,7 +281,7 @@ fn handle_feedback(message: String) -> Result<(), Box<dyn Error>> {
 
     let line = format!(
         "{}|feedback|{}",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(),
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
         message
     );
     weekly::append_log(vault, &line)?;
@@ -321,10 +318,7 @@ fn handle_logout() -> Result<(), Box<dyn Error>> {
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
 
-    let line = format!(
-        "{}|logout",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string()
-    );
+    let line = format!("{}|logout", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"));
     weekly::append_log(vault, &line)?;
     println!("Goodbye!");
     Ok(())

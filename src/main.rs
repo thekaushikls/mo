@@ -171,7 +171,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Init { path } => handle_init(path)?,
         Command::Login { feeling } => handle_login(feeling)?,
         Command::Feeling { feeling } => handle_feeling(feeling)?,
-        Command::Break { message} => handle_break(message)?,
+        Command::Break { message } => handle_break(message)?,
         Command::Note { message } => handle_note(message)?,
         Command::Work { message, flags } => handle_work(message, flags)?,
         Command::Log { arg } => handle_log(arg)?,
@@ -252,22 +252,18 @@ fn handle_break(message: Option<String>) -> Result<(), Box<dyn Error>> {
 
     if let Some(message) = message {
         let line = format!(
-        "{}|break|{}",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
-        message
+            "{}|break|{}",
+            now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
+            message
         );
         weekly::append_log(vault, &line)?;
         return Ok(());
     }
 
-    let line = format!(
-        "{}|break",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z")
-    );
+    let line = format!("{}|break", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"));
     weekly::append_log(vault, &line)?;
     Ok(())
 }
-
 
 fn handle_work(message: String, flags: WorkFlags) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
@@ -320,14 +316,28 @@ fn handle_log(arg: String) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
 
-    if arg == "file" {
+    if arg.to_lowercase() == "file" {
         let today = Local::now().date_naive();
         println!("{}", weekly::log_file_path(vault, today).display());
         return Ok(());
     }
 
-    let count: usize = arg.parse().unwrap_or(5);
-    let lines = weekly::read_lines(vault, count)?;
+    let lines = if arg.to_lowercase() == "today" {
+        let date_str = Local::now().format("%Y-%m-%d").to_string();
+
+        println!("today_key: {}", date_str);
+
+        let all = weekly::read_lines(vault, usize::MAX)?;
+
+        println!("entries: {}", all.len());
+
+        all.into_iter()
+            .filter(|l| l.starts_with(&date_str))
+            .collect()
+    } else {
+        let count: usize = arg.parse().unwrap_or(5);
+        weekly::read_lines(vault, count)?
+    };
 
     if lines.is_empty() {
         println!("No entries this week.");

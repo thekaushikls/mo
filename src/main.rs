@@ -72,6 +72,18 @@ enum Command {
         #[command(subcommand)]
         entity: AddEntity,
     },
+
+    /// Manage Projects
+    Project {
+        #[command(subcommand)]
+        action: ProjectAction,
+    },
+
+    /// Manage People
+    People {
+        #[command(subcommand)]
+        action: PeopleAction,
+    }
 }
 
 #[derive(clap::Args)]
@@ -131,6 +143,19 @@ enum AddEntity {
     },
 }
 
+#[derive(Subcommand)]
+enum ProjectAction {
+    /// List all projects
+    Ls,
+}
+
+#[derive(Subcommand)]
+enum PeopleAction {
+    /// List all people
+    Ls,
+}
+
+
 fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
     
@@ -150,7 +175,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Add {entity} => match entity {
             AddEntity::Project{name, alias} => handle_add_project(name, alias)?,
             AddEntity::Person {name, alias} => handle_add_person(name, alias)?,
-        }
+        },
+
+        // Manage Projects
+        Command::Project{ action } => match action {
+            ProjectAction::Ls => handle_list_projects()?,
+        },
+
+        // Manage People
+        Command::People { action } => match action {
+            PeopleAction::Ls => handle_list_people()?,
+        },
+
     }
 
     Ok(())
@@ -296,6 +332,21 @@ fn handle_add_project(name: String, aliases: Vec<String>) -> Result<(), Box<dyn 
     Ok(())
 }
 
+fn handle_list_projects() -> Result<(), Box<dyn Error>> {
+    let registry = registry::Registry::load()?;
+
+    if registry.projects.is_empty() {
+        println!("No projects");
+        return Ok(());
+    }
+    for p in &registry.projects {
+        println!("    {} ({})", p.name, p.status)
+    }
+
+    Ok(())
+}
+
+
 fn handle_add_person(name: String, aliases: Vec<String>) -> Result<(), Box<dyn Error>> {
     let mut registry = registry::Registry::load()?;
 
@@ -312,5 +363,20 @@ fn handle_add_person(name: String, aliases: Vec<String>) -> Result<(), Box<dyn E
     registry.save()?;
 
     println!("Added person `{}`.", name);
+    Ok(())
+}
+
+fn handle_list_people() -> Result<(), Box<dyn Error>> {
+    let registry = registry::Registry::load()?;
+
+    if registry.people.is_empty() {
+        println!("No people");
+        return Ok(());
+    }
+
+    for person in &registry.people {
+        println!("    {}", person.name);
+    }
+    
     Ok(())
 }

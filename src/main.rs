@@ -1,3 +1,4 @@
+mod entity;
 mod registry;
 mod weekly;
 
@@ -173,18 +174,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Feedback { message } => handle_feedback(message)?,
         
         Command::Add {entity} => match entity {
-            AddEntity::Project{name, alias} => handle_add_project(name, alias)?,
-            AddEntity::Person {name, alias} => handle_add_person(name, alias)?,
+            AddEntity::Project{name, alias} => entity::Project::add(name, alias)?,
+            AddEntity::Person {name, alias} => entity::Person::add(name, alias)?,
         },
 
         // Manage Projects
         Command::Project{ action } => match action {
-            ProjectAction::Ls => handle_list_projects()?,
+            ProjectAction::Ls => entity::Project::list()?,
         },
 
         // Manage People
         Command::People { action } => match action {
-            PeopleAction::Ls => handle_list_people()?,
+            PeopleAction::Ls => entity::Person::list()?,
         },
 
     }
@@ -311,72 +312,3 @@ fn handle_logout() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn handle_add_project(name: String, aliases: Vec<String>) -> Result<(), Box<dyn Error>> {
-    let mut registry = registry::Registry::load()?;
-
-    if registry.find_project(&name).is_some() {
-        
-        println!("Project {} already exists.", name);
-        return Ok(())
-    }
-
-    let new_project = registry::Project {
-        name: name.clone(),
-        aliases,
-        status: "active".into(),
-    };
-    registry.projects.push(new_project);
-    registry.save()?;
-    
-    println!("Added project `{}`.", name);
-    Ok(())
-}
-
-fn handle_list_projects() -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-
-    if registry.projects.is_empty() {
-        println!("No projects");
-        return Ok(());
-    }
-    for p in &registry.projects {
-        println!("    {} ({})", p.name, p.status)
-    }
-
-    Ok(())
-}
-
-
-fn handle_add_person(name: String, aliases: Vec<String>) -> Result<(), Box<dyn Error>> {
-    let mut registry = registry::Registry::load()?;
-
-    if registry.find_person(&name).is_some() {
-        println!("Person {} already exists.", name);
-        return Ok(())
-    }
-
-    let new_person = registry::Person {
-        name: name.clone(),
-        aliases,
-    };
-    registry.people.push(new_person);
-    registry.save()?;
-
-    println!("Added person `{}`.", name);
-    Ok(())
-}
-
-fn handle_list_people() -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-
-    if registry.people.is_empty() {
-        println!("No people");
-        return Ok(());
-    }
-
-    for person in &registry.people {
-        println!("    {}", person.name);
-    }
-    
-    Ok(())
-}

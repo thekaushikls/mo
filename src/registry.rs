@@ -1,5 +1,6 @@
-use std::{error::Error, fs, path::PathBuf, string::String};
+use std::{error::Error, fs, path::PathBuf};
 use serde::{Deserialize, Serialize};
+use crate::entity::{Project, Person};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct VaultConfig {
@@ -13,26 +14,6 @@ pub struct Registry {
     pub projects: Vec<Project>,
     #[serde(default)]
     pub people: Vec<Person>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Project {
-    pub name: String,
-    #[serde(default)]
-    pub aliases: Vec<String>,
-    #[serde(default = "default_status")]
-    pub status: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Person {
-    pub name: String,
-    #[serde(default)]
-    pub aliases: Vec<String>,
-}
-
-fn default_status() -> String {
-    "active".into()
 }
 
 impl Registry {
@@ -60,7 +41,7 @@ impl Registry {
         fs::write("mo.toml", contents)?;
         Ok(())
     }
-    
+
     pub fn find_project(&self, name: &str) -> Option<&Project> {
         let needle = name.to_lowercase();
         self.projects.iter().find(|p| {

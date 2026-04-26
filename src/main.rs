@@ -324,13 +324,7 @@ fn handle_log(arg: String) -> Result<(), Box<dyn Error>> {
 
     let lines = if arg.to_lowercase() == "today" {
         let date_str = Local::now().format("%Y-%m-%d").to_string();
-
-        println!("today_key: {}", date_str);
-
         let all = weekly::read_lines(vault, usize::MAX)?;
-
-        println!("entries: {}", all.len());
-
         all.into_iter()
             .filter(|l| l.starts_with(&date_str))
             .collect()

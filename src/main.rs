@@ -37,7 +37,7 @@ enum Command {
     },
 
     /// Start / Stop a break
-    Break { message: String },
+    Break { message: Option<String> },
 
     /// How are you feeling?
     Feeling { feeling: String },
@@ -171,6 +171,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Init { path } => handle_init(path)?,
         Command::Login { feeling } => handle_login(feeling)?,
         Command::Feeling { feeling } => handle_feeling(feeling)?,
+        Command::Break { message} => handle_break(message)?,
         Command::Note { message } => handle_note(message)?,
         Command::Work { message, flags } => handle_work(message, flags)?,
         Command::Log { arg } => handle_log(arg)?,
@@ -243,6 +244,30 @@ fn handle_feeling(feeling: String) -> Result<(), Box<dyn Error>> {
     weekly::append_log(vault, &line)?;
     Ok(())
 }
+
+fn handle_break(message: Option<String>) -> Result<(), Box<dyn Error>> {
+    let registry = registry::Registry::load()?;
+    let vault = Path::new(&registry.vault.path);
+    let now = Local::now();
+
+    if let Some(message) = message {
+        let line = format!(
+        "{}|break|{}",
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
+        message
+        );
+        weekly::append_log(vault, &line)?;
+        return Ok(());
+    }
+
+    let line = format!(
+        "{}|break",
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z")
+    );
+    weekly::append_log(vault, &line)?;
+    Ok(())
+}
+
 
 fn handle_work(message: String, flags: WorkFlags) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;

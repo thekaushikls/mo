@@ -1,6 +1,6 @@
-use std::{error::Error, fs, path::PathBuf};
+use crate::entity::{Person, Project};
 use serde::{Deserialize, Serialize};
-use crate::entity::{Project, Person};
+use std::{error::Error, fs, path::PathBuf};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct VaultConfig {
@@ -45,16 +45,14 @@ impl Registry {
     pub fn find_project(&self, name: &str) -> Option<&Project> {
         let needle = name.to_lowercase();
         self.projects.iter().find(|p| {
-            p.name.to_lowercase() == needle
-                || p.aliases.iter().any(|a| a.to_lowercase() == needle)
+            p.name.to_lowercase() == needle || p.aliases.iter().any(|a| a.to_lowercase() == needle)
         })
     }
 
     pub fn find_person(&self, name: &str) -> Option<&Person> {
         let needle = name.to_lowercase();
         self.people.iter().find(|p| {
-            p.name.to_lowercase() == needle
-                || p.aliases.iter().any(|a| a.to_lowercase() == needle)
+            p.name.to_lowercase() == needle || p.aliases.iter().any(|a| a.to_lowercase() == needle)
         })
     }
 }

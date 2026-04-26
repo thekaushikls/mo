@@ -2,14 +2,13 @@ mod entity;
 mod registry;
 mod weekly;
 
-use std::{error::Error, fs, io::stdout, path::Path};
-use chrono::{Local};
+use chrono::Local;
 use clap::{CommandFactory, Parser, Subcommand};
-use clap_complete::{generate, Shell};
-
+use clap_complete::{Shell, generate};
+use std::{error::Error, fs, io::stdout, path::Path};
 
 #[derive(Parser)]
-#[command(name="mo", about="CLI tool to log work", version)]
+#[command(name = "mo", about = "CLI tool to log work", version)]
 struct Cli {
     #[command(subcommand)]
     command: Command,
@@ -27,7 +26,7 @@ enum Command {
     /// Initialize a new registry
     Init {
         /// Path for the registry directory
-        #[arg(long, default_value=".")]
+        #[arg(long, default_value = ".")]
         path: String,
     },
 
@@ -38,19 +37,13 @@ enum Command {
     },
 
     /// How are you feeling?
-    Feeling {
-        feeling: String
-    },
+    Feeling { feeling: String },
 
     /// Jot down a note
-    Note {
-        message: String
-    },
+    Note { message: String },
 
     /// Feedback and Bug Reports
-    Feedback {
-        message: String
-    },
+    Feedback { message: String },
 
     /// Add a work entry
     Work {
@@ -64,7 +57,7 @@ enum Command {
         #[arg(default_value = "5")]
         arg: String,
     },
-    
+
     /// End work day
     Logout,
 
@@ -78,7 +71,7 @@ enum Command {
     People {
         #[command(subcommand)]
         action: PeopleAction,
-    }
+    },
 }
 
 #[derive(clap::Args)]
@@ -104,14 +97,30 @@ struct WorkFlags {
 impl WorkFlags {
     fn to_vec(&self) -> Vec<&str> {
         let mut flags = Vec::new();
-        if self.blocked { flags.push("blocked"); }
-        if self.done { flags.push("done"); }
-        if self.feature { flags.push("feature"); }
-        if self.meeting { flags.push("meeting"); }
-        if self.now { flags.push("now"); }
-        if self.todo { flags.push("todo"); }
-        if self.unplanned { flags.push("unplanned"); }
-        if self.urgent { flags.push("urgent"); }
+        if self.blocked {
+            flags.push("blocked");
+        }
+        if self.done {
+            flags.push("done");
+        }
+        if self.feature {
+            flags.push("feature");
+        }
+        if self.meeting {
+            flags.push("meeting");
+        }
+        if self.now {
+            flags.push("now");
+        }
+        if self.todo {
+            flags.push("todo");
+        }
+        if self.unplanned {
+            flags.push("unplanned");
+        }
+        if self.urgent {
+            flags.push("urgent");
+        }
 
         flags
     }
@@ -149,10 +158,9 @@ enum PeopleAction {
     },
 }
 
-
 fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
-    
+
     match cli.command {
         Command::Completions { shell } => {
             generate(shell, &mut Cli::command(), "mo", &mut stdout());
@@ -162,22 +170,21 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Feeling { feeling } => handle_feeling(feeling)?,
         Command::Note { message } => handle_note(message)?,
         Command::Work { message, flags } => handle_work(message, flags)?,
-        Command::Log { arg} => handle_log(arg)?,
+        Command::Log { arg } => handle_log(arg)?,
         Command::Logout => handle_logout()?,
         Command::Feedback { message } => handle_feedback(message)?,
-        
+
         // Manage Projects
-        Command::Project{ action } => match action {
+        Command::Project { action } => match action {
             ProjectAction::Ls => entity::Project::list()?,
-            ProjectAction::Add {name, alias} => entity::Project::add(name, alias)?,
+            ProjectAction::Add { name, alias } => entity::Project::add(name, alias)?,
         },
 
         // Manage People
-        Command::People {action} => match action {
+        Command::People { action } => match action {
             PeopleAction::Ls => entity::Person::list()?,
-            PeopleAction::Add {name, alias} => entity::Person::add(name, alias)?,
+            PeopleAction::Add { name, alias } => entity::Person::add(name, alias)?,
         },
-
     }
 
     Ok(())
@@ -196,7 +203,7 @@ fn handle_init(path: String) -> Result<(), Box<dyn Error>> {
             vault: registry::VaultConfig { path },
             ..Default::default()
         };
-        
+
         registry.save()?;
         println!("Created registry at: {}", registry_path.display());
     }
@@ -208,25 +215,31 @@ fn handle_login(feeling: Option<String>) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
-    
-    let line = format!("{}|login", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string());
+
+    let line = format!(
+        "{}|login",
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string()
+    );
     weekly::append_log(vault, &line)?;
     println!("Welcome back!");
-    
+
     if let Some(feeling) = feeling {
         handle_feeling(feeling)?;
     }
-    
+
     Ok(())
-    
 }
 
 fn handle_feeling(feeling: String) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
-    
-    let line = format!("{}|feeling|{}", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(), feeling);
+
+    let line = format!(
+        "{}|feeling|{}",
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(),
+        feeling
+    );
     weekly::append_log(vault, &line)?;
     Ok(())
 }
@@ -236,7 +249,11 @@ fn handle_work(message: String, flags: WorkFlags) -> Result<(), Box<dyn Error>> 
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
 
-    let mut line = format!("{}|work|{}", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(), message);
+    let mut line = format!(
+        "{}|work|{}",
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(),
+        message
+    );
     let flag_list = flags.to_vec();
     if !flag_list.is_empty() {
         line.push_str(&format!("|flags={}", flag_list.join(",")));
@@ -251,7 +268,11 @@ fn handle_note(message: String) -> Result<(), Box<dyn Error>> {
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
 
-    let line = format!("{}|note|{}", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(), message);
+    let line = format!(
+        "{}|note|{}",
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(),
+        message
+    );
     weekly::append_log(vault, &line)?;
     Ok(())
 }
@@ -261,7 +282,11 @@ fn handle_feedback(message: String) -> Result<(), Box<dyn Error>> {
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
 
-    let line = format!("{}|feedback|{}", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(), message);
+    let line = format!(
+        "{}|feedback|{}",
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string(),
+        message
+    );
     weekly::append_log(vault, &line)?;
     Ok(())
 }
@@ -269,13 +294,13 @@ fn handle_feedback(message: String) -> Result<(), Box<dyn Error>> {
 fn handle_log(arg: String) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
-    
+
     if arg == "file" {
         let today = Local::now().date_naive();
         println!("{}", weekly::log_file_path(vault, today).display());
         return Ok(());
     }
-    
+
     let count: usize = arg.parse().unwrap_or(5);
     let lines = weekly::read_lines(vault, count)?;
 
@@ -287,7 +312,7 @@ fn handle_log(arg: String) -> Result<(), Box<dyn Error>> {
     for line in &lines {
         println!("{}", line);
     }
-    
+
     Ok(())
 }
 
@@ -295,10 +320,12 @@ fn handle_logout() -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
-    
-    let line = format!("{}|logout", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string());
+
+    let line = format!(
+        "{}|logout",
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string()
+    );
     weekly::append_log(vault, &line)?;
     println!("Goodbye!");
     Ok(())
 }
-

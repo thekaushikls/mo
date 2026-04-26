@@ -1,6 +1,6 @@
-use std::error::Error;
-use serde::{Deserialize, Serialize};
 use crate::registry::Registry;
+use serde::{Deserialize, Serialize};
+use std::error::Error;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Project {

@@ -41,6 +41,16 @@ enum Command {
         feeling: String
     },
 
+    /// Jot down a note
+    Note {
+        message: String
+    },
+
+    /// Feedback and Bug Reports
+    Feedback {
+        message: String
+    },
+
     /// Add a work entry
     Work {
         message: String,
@@ -128,9 +138,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Init { path } => handle_init(path)?,
         Command::Login { feeling } => handle_login(feeling)?,
         Command::Feeling { feeling } => handle_feeling(feeling)?,
+        Command::Note { message } => handle_note(message)?,
         Command::Work { message, flags } => handle_work(message, flags)?,
         Command::Log { arg} => handle_log(arg)?,
         Command::Logout => handle_logout()?,
+        Command::Feedback { message } => handle_feedback(message)?,
         
         Command::Add {entity} => match entity {
             AddEntity::Project{name, alias} => handle_add_project(name, alias)?,
@@ -200,6 +212,26 @@ fn handle_work(message: String, flags: WorkFlags) -> Result<(), Box<dyn Error>> 
         line.push_str(&format!("|flags={}", flag_list.join(",")));
     }
 
+    weekly::append_log(vault, &line)?;
+    Ok(())
+}
+
+fn handle_note(message: String) -> Result<(), Box<dyn Error>> {
+    let registry = registry::Registry::load()?;
+    let vault = Path::new(&registry.vault.path);
+    let now = Local::now();
+
+    let line = format!("{}|note|{}", now.to_rfc3339(), message);
+    weekly::append_log(vault, &line)?;
+    Ok(())
+}
+
+fn handle_feedback(message: String) -> Result<(), Box<dyn Error>> {
+    let registry = registry::Registry::load()?;
+    let vault = Path::new(&registry.vault.path);
+    let now = Local::now();
+
+    let line = format!("{}|feedback|{}", now.to_rfc3339(), message);
     weekly::append_log(vault, &line)?;
     Ok(())
 }

@@ -36,14 +36,17 @@ enum Command {
         feeling: Option<String>,
     },
 
+    /// Start / Stop a break
+    Break { message: String },
+
     /// How are you feeling?
     Feeling { feeling: String },
 
-    /// Jot down a note
-    Note { message: String },
-
     /// Feedback and Bug Reports
     Feedback { message: String },
+
+    /// Jot down a note
+    Note { message: String },
 
     /// Add a work entry
     Work {

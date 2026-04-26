@@ -1,5 +1,50 @@
 # Changelog
 
+## v0.1.3 — 2026-04-26
+
+### New Commands
+
+- `mo break` / `mo break "lunch"` — Log a break, with optional reason
+- `mo log today` — Show only today's entries
+
+### Fixes
+
+- Break handler wired up correctly
+
+---
+
+## v0.1.2 — 2026-04-21
+
+### New Commands
+
+- `mo note "<text>"` — Scratchpad-style freeform notes
+- `mo feedback "<text>"` — Bug reports and feedback entries
+- `mo project ls` / `mo project add` — Manage projects directly
+- `mo people ls` / `mo people add` — Manage people directly
+
+### Improvements
+
+- Fixed timestamp precision — consistent nanosecond formatting across all entries
+- Refactored entity management — `Project` and `Person` logic moved to `entity.rs`
+- Removed nested `add` subcommand — projects and people managed via `mo project` and `mo people`
+- Added macOS to CI builds
+
+---
+
+## v0.1.1 — 2026-04-15
+
+### New Commands
+
+- `mo --version` — Show current version
+- `mo log` — Show last N entries from current week's log (default: 5)
+- `mo log file` — Print the current log file path
+
+### Improvements
+
+- Default vault path changed to current directory (`.`) instead of `./sample/vault`
+
+---
+
 ## v0.1.0 — 2026-04-06
 
 First release of `mo`, a CLI tool to log work from the terminal.
@@ -8,7 +53,7 @@ First release of `mo`, a CLI tool to log work from the terminal.
 
 - `mo init --path <dir>` — Initialize a new vault with `mo.toml` config
 - `mo login` — Start work day (appends to weekly log)
-- `mo login --feeling <mood>` — Start with a mood entry
+- `mo login --feeling <mood>` — Start with a feeling entry
 - `mo logout` — End work day
 - `mo work "<message>"` — Log a work entry with timestamp
 - `mo feeling <mood>` — Record how you're feeling

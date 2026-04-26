@@ -68,12 +68,6 @@ enum Command {
     /// End work day
     Logout,
 
-    /// Add an entity (Project) to the registry
-    Add {
-        #[command(subcommand)]
-        entity: AddEntity,
-    },
-
     /// Manage Projects
     Project {
         #[command(subcommand)]
@@ -124,36 +118,35 @@ impl WorkFlags {
 }
 
 #[derive(Subcommand)]
-enum AddEntity {
-    /// Add a project
-    Project {
-        /// Project name
-        name: String,
-        /// Alias (repeatable)
-        #[arg(long)]
-        alias: Vec<String>,
-    },
-    
-    /// Add a person
-    Person {
-        /// Person name
-        name: String,
-        /// Alias (repeatable)
-        #[arg(long)]
-        alias: Vec<String>,
-    },
-}
-
-#[derive(Subcommand)]
 enum ProjectAction {
     /// List all projects
     Ls,
+
+    /// Add a project
+    Add {
+        /// Projects name
+        name: String,
+
+        /// Alias (repeatable)
+        #[arg(long)]
+        alias: Vec<String>,
+    },
 }
 
 #[derive(Subcommand)]
 enum PeopleAction {
     /// List all people
     Ls,
+
+    /// Add a person
+    Add {
+        /// Person name
+        name: String,
+
+        /// Alias (repeatable)
+        #[arg(long)]
+        alias: Vec<String>,
+    },
 }
 
 
@@ -173,19 +166,16 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Logout => handle_logout()?,
         Command::Feedback { message } => handle_feedback(message)?,
         
-        Command::Add {entity} => match entity {
-            AddEntity::Project{name, alias} => entity::Project::add(name, alias)?,
-            AddEntity::Person {name, alias} => entity::Person::add(name, alias)?,
-        },
-
         // Manage Projects
         Command::Project{ action } => match action {
             ProjectAction::Ls => entity::Project::list()?,
+            ProjectAction::Add {name, alias} => entity::Project::add(name, alias)?,
         },
 
         // Manage People
-        Command::People { action } => match action {
+        Command::People {action} => match action {
             PeopleAction::Ls => entity::Person::list()?,
+            PeopleAction::Add {name, alias} => entity::Person::add(name, alias)?,
         },
 
     }

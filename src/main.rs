@@ -61,6 +61,9 @@ enum Command {
         arg: String,
     },
 
+    /// Show entries from current day
+    Today,
+
     /// End work day
     Logout,
 
@@ -177,6 +180,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Log { arg } => handle_log(arg)?,
         Command::Logout => handle_logout()?,
         Command::Feedback { message } => handle_feedback(message)?,
+
+        Command::Today => handle_today()?,
 
         // Manage Projects
         Command::Project { action } => match action {
@@ -341,6 +346,52 @@ fn handle_log(arg: String) -> Result<(), Box<dyn Error>> {
     for line in &lines {
         println!("{}", line);
     }
+
+    Ok(())
+}
+
+// TODO: Move a separate struct.
+fn handle_today() -> Result<(), Box<dyn Error>> {
+    let registry = registry::Registry::load()?;
+    let vault = Path::new(&registry.vault.path);
+
+    let date_str = Local::now().format("%Y-%m-%d").to_string();
+    let all = weekly::read_lines(vault, usize::MAX)?;
+    let _lines: Vec<String> = all.into_iter()
+        .filter(|l| l.starts_with(&date_str))
+        .collect();
+
+    // 0 -> timestamp
+    // 1 -> type
+    // 2 -> comment | optional
+    // 3 -> flags (ignoring for now) | optional
+
+    const LINE_LENGTH: usize = 55; //TODO: Move to global config. This should be user-configurable.
+    println!("");
+    for line in &_lines {
+        let parts: Vec<&str> = line.split('|').collect();
+        let time_str = &parts[0][11..16];
+        let type_str = parts[1];
+        
+        let comment_str = if parts.len() > 2 {
+            if parts[2].len() > LINE_LENGTH {
+                // TODO: Refactor, parts[2].len() being called multiple times.
+                let _slice = parts[2].len().min(LINE_LENGTH);
+                // TODO: ({} more) should be changed to count words instead of characters.
+                format!(": {}... ({} more)", &parts[2][.._slice], parts[2].len() - LINE_LENGTH)
+            } else {
+                // TODO: Remove the ':', needs to be placed conditionally - if comments exist.
+                format!(": {}", parts[2].to_string())
+            }
+        } else {
+            String::new()
+        };
+
+        // TODO: Remove hardcoded value '8' for fixed width. Either all "type" strings should be 
+        // 4 letters (prefereable), or should be calculated dynamically, before the print-loop.
+        println!("{time_str:} {type_str:<8}{comment_str}");
+    }
+    println!("");
 
     Ok(())
 }

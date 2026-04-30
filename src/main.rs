@@ -93,6 +93,8 @@ struct WorkFlags {
     #[arg(long)]
     now: bool,
     #[arg(long)]
+    research: bool,
+    #[arg(long)]
     todo: bool,
     #[arg(long)]
     unplanned: bool,
@@ -117,6 +119,9 @@ impl WorkFlags {
         }
         if self.now {
             flags.push("now");
+        }
+        if self.research{
+            flags.push("research");
         }
         if self.todo {
             flags.push("todo");

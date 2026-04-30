@@ -33,17 +33,17 @@ enum Command {
     /// Start work day
     Login {
         #[arg(long)]
-        feeling: Option<String>,
+        mood: Option<String>,
     },
 
     /// Start / Stop a break
     Break { message: Option<String> },
 
     /// How are you feeling?
-    Feeling { feeling: String },
+    Mood { mood: String },
 
-    /// Feedback and Bug Reports
-    Feedback { message: String },
+    /// Talk about feedback and/or bug reports
+    Talk { message: String },
 
     /// Jot down a note
     Note { message: String },
@@ -172,14 +172,14 @@ fn main() -> Result<(), Box<dyn Error>> {
             generate(shell, &mut Cli::command(), "mo", &mut stdout());
         }
         Command::Init { path } => handle_init(path)?,
-        Command::Login { feeling } => handle_login(feeling)?,
-        Command::Feeling { feeling } => handle_feeling(feeling)?,
+        Command::Login { mood } => handle_login(mood)?,
+        Command::Mood { mood } => handle_mood(mood)?,
         Command::Break { message } => handle_break(message)?,
         Command::Note { message } => handle_note(message)?,
         Command::Work { message, flags } => handle_work(message, flags)?,
         Command::Log { arg } => handle_log(arg)?,
         Command::Logout => handle_logout()?,
-        Command::Feedback { message } => handle_feedback(message)?,
+        Command::Talk { message } => handle_talk(message)?,
 
         Command::Today => handle_today()?,
 
@@ -220,7 +220,7 @@ fn handle_init(path: String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn handle_login(feeling: Option<String>) -> Result<(), Box<dyn Error>> {
+fn handle_login(mood: Option<String>) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
@@ -229,22 +229,22 @@ fn handle_login(feeling: Option<String>) -> Result<(), Box<dyn Error>> {
     weekly::append_log(vault, &line)?;
     println!("Welcome back!");
 
-    if let Some(feeling) = feeling {
-        handle_feeling(feeling)?;
+    if let Some(mood) = mood {
+        handle_mood(mood)?;
     }
 
     Ok(())
 }
 
-fn handle_feeling(feeling: String) -> Result<(), Box<dyn Error>> {
+fn handle_mood(mood: String) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
 
     let line = format!(
-        "{}|feeling|{}",
+        "{}|mood|{}",
         now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
-        feeling
+        mood
     );
     weekly::append_log(vault, &line)?;
     Ok(())
@@ -303,13 +303,13 @@ fn handle_note(message: String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn handle_feedback(message: String) -> Result<(), Box<dyn Error>> {
+fn handle_talk(message: String) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
 
     let line = format!(
-        "{}|feedback|{}",
+        "{}|talk|{}",
         now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
         message
     );

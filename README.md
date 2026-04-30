@@ -1,5 +1,6 @@
-# mo — CLI tool to log work
+<img src="assets/logo.png" height="150px" alt="Mo - tools to get the job done"/>
 
+# `mo` &mdash; CLI tools to get the job done
 A fast, append-only work logger. Single binary, no runtime dependencies.
 
 ## Setup

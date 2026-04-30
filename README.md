@@ -13,11 +13,11 @@ mo --version                  # check version
 
 ```bash
 mo login                      # start work day
-mo login --feeling tired      # start with a mood entry
+mo login --mood tired      # start with a mood entry
 mo logout                     # end work day
 mo break                      # log a break
 mo break "lunch"              # log a break with reason
-mo feeling "focused"          # update mood mid-day
+mo mood "focused"          # update mood mid-day
 ```
 
 ## Logging Work
@@ -28,7 +28,7 @@ mo work "standup" --meeting               # meeting
 mo work "deploy v2" --done                # completed task
 mo work "urgent prod fix" --urgent --now  # multiple flags
 mo note "check CI config later"           # freeform note
-mo feedback "cli feels slow on startup"   # feedback/bug report
+mo talk "cli feels slow on startup"       # feedback/bug report
 ```
 
 ### Work Flags

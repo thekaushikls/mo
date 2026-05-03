@@ -45,7 +45,7 @@ impl Project {
         }
 
         for p in &registry.projects {
-            println!("    {} ({})", p.name, p.status);
+            println!("    {}", p.name);
         }
 
         Ok(())

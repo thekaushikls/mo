@@ -48,11 +48,18 @@ enum Command {
     /// Jot down a note
     Note { message: String },
 
+    /// Something that is fun
+    Play { 
+        message: String,
+        #[command(flatten)]
+        tags: WorkFlags,
+    },
+
     /// Add a work entry
     Work {
         message: String,
         #[command(flatten)]
-        flags: WorkFlags,
+        tags: WorkFlags,
     },
 
     /// Show recent entries (default: 5)
@@ -104,36 +111,36 @@ struct WorkFlags {
 
 impl WorkFlags {
     fn to_vec(&self) -> Vec<&str> {
-        let mut flags = Vec::new();
+        let mut tags = Vec::new();
         if self.blocked {
-            flags.push("blocked");
+            tags.push("blocked");
         }
         if self.done {
-            flags.push("done");
+            tags.push("done");
         }
         if self.feature {
-            flags.push("feature");
+            tags.push("feature");
         }
         if self.meeting {
-            flags.push("meeting");
+            tags.push("meeting");
         }
         if self.now {
-            flags.push("now");
+            tags.push("now");
         }
         if self.research{
-            flags.push("research");
+            tags.push("research");
         }
         if self.todo {
-            flags.push("todo");
+            tags.push("todo");
         }
         if self.unplanned {
-            flags.push("unplanned");
+            tags.push("unplanned");
         }
         if self.urgent {
-            flags.push("urgent");
+            tags.push("urgent");
         }
 
-        flags
+        tags
     }
 }
 
@@ -181,7 +188,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Mood { mood } => handle_mood(mood)?,
         Command::Break { message } => handle_break(message)?,
         Command::Note { message } => handle_note(message)?,
-        Command::Work { message, flags } => handle_work(message, flags)?,
+        Command::Play { message, tags } => handle_play(message, tags)?,
+        Command::Work { message, tags } => handle_work(message, tags)?,
         Command::Log { arg } => handle_log(arg)?,
         Command::Logout => handle_logout()?,
         Command::Talk { message } => handle_talk(message)?,
@@ -275,7 +283,26 @@ fn handle_break(message: Option<String>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn handle_work(message: String, flags: WorkFlags) -> Result<(), Box<dyn Error>> {
+fn handle_play(message: String, tags: WorkFlags) -> Result<(), Box<dyn Error>> {
+    let registry = registry::Registry::load()?;
+    let vault = Path::new(&registry.vault.path);
+    let now = Local::now();
+
+    let mut line = format!(
+        "{}|play|{}",
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
+        message
+    );
+    let tag_list = tags.to_vec();
+    if !tag_list.is_empty() {
+        line.push_str(&format!("|tags={}", tag_list.join(",")));
+    }
+
+    weekly::append_log(vault, &line)?;
+    Ok(())
+}
+
+fn handle_work(message: String, tags: WorkFlags) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
@@ -285,9 +312,9 @@ fn handle_work(message: String, flags: WorkFlags) -> Result<(), Box<dyn Error>> 
         now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
         message
     );
-    let flag_list = flags.to_vec();
-    if !flag_list.is_empty() {
-        line.push_str(&format!("|flags={}", flag_list.join(",")));
+    let tag_list = tags.to_vec();
+    if !tag_list.is_empty() {
+        line.push_str(&format!("|tags={}", tag_list.join(",")));
     }
 
     weekly::append_log(vault, &line)?;

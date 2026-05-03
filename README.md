@@ -14,11 +14,11 @@ mo --version                  # check version
 
 ```bash
 mo login                      # start work day
-mo login --mood tired      # start with a mood entry
+mo login --mood tired         # start with a mood entry
 mo logout                     # end work day
 mo break                      # log a break
 mo break "lunch"              # log a break with reason
-mo mood "focused"          # update mood mid-day
+mo mood "focused"             # update mood mid-day
 ```
 
 ## Logging Work

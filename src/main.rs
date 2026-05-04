@@ -261,23 +261,9 @@ fn handle_login(mood: Option<String>) -> Result<(), Box<dyn Error>> {
     println!("Welcome back!");
 
     if let Some(mood) = mood {
-        handle_mood(mood)?;
+        handle_command("mood", mood, None)?;
     }
 
-    Ok(())
-}
-
-fn handle_mood(mood: String) -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-    let vault = Path::new(&registry.vault.path);
-    let now = Local::now();
-
-    let line = format!(
-        "{}|mood|{}",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
-        mood
-    );
-    weekly::append_log(vault, &line)?;
     Ok(())
 }
 

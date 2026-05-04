@@ -21,20 +21,23 @@ mo break "lunch"              # log a break with reason
 mo mood "focused"             # update mood mid-day
 ```
 
-## Logging Work
+## Logging
 
 ```bash
 mo work "fixed auth bug"                  # basic entry
 mo work "standup" --meeting               # meeting
 mo work "deploy v2" --done                # completed task
-mo work "urgent prod fix" --urgent --now  # multiple flags
-mo note "check CI config later"           # freeform note
+mo work "urgent prod fix" --urgent --now  # multiple tags
+mo home "groceries" --todo                # house chores
+mo play "guitar practice" --done          # fun / hobby
 mo talk "cli feels slow on startup"       # feedback/bug report
 ```
 
-### Work Flags
+### Tags
 
-`--blocked` `--done` `--feature` `--meeting` `--now` `--todo` `--unplanned` `--urgent`
+`--blocked` `--done` `--feature` `--meeting` `--note` `--now` `--research` `--todo` `--unplanned` `--urgent`
+
+Tags are supported on `work`, `home`, and `play` commands.
 
 ## Viewing Logs
 

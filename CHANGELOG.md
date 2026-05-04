@@ -1,5 +1,42 @@
 # Changelog
 
+## v0.3.0 — 2026-05-04
+
+### Breaking Changes
+
+- Removed `note` command — use `--note` tag on `work`, `home`, or `play` instead
+
+### New Commands
+
+- `mo home "<message>"` — Log house chores (supports tags)
+- `mo play "<message>"` — Log fun / hobby entries (supports tags)
+
+### New Tags
+
+- `--note` — Mark an entry as a note
+- `--research` — Mark an entry as research
+
+### Improvements
+
+- Renamed "flags" to "tags" across CLI and codebase
+- Unified command handling — `mood`, `talk`, `work`, `home`, and `play` all route through a single `handle_command()` with optional tags
+- `mo login --mood` now uses the shared command handler
+
+---
+
+## v0.2.0 — 2026-04-30
+
+### Breaking Changes
+
+- Renamed `feeling` command to `mood`
+- Renamed `feedback` command to `talk`
+
+### Improvements
+- Added `--research` flag to work entries
+- Added `mo today` as a standalone command (formatted daily view)
+
+---
+
 ## v0.1.3 — 2026-04-26
 
 ### New Commands

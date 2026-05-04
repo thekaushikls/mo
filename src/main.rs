@@ -47,7 +47,7 @@ enum Command {
     },
 
     /// How are you feeling?
-    Mood { mood: String },
+    Mood { message: String },
 
     /// Talk about feedback and/or bug reports
     Talk { message: String },
@@ -192,23 +192,28 @@ fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
 
     match cli.command {
+        // Meta Config 
         Command::Completions { shell } => {
             generate(shell, &mut Cli::command(), "mo", &mut stdout());
         }
+        Command::Today => handle_today()?,
+        Command::Log { arg } => handle_log(arg)?,
+        // Basic usage
         Command::Init { path } => handle_init(path)?,
         Command::Login { mood } => handle_login(mood)?,
-        Command::Mood { mood } => handle_mood(mood)?,
-        Command::Break { message } => handle_break(message)?,
-        Command::Note { message } => handle_note(message)?,
-        Command::Home { message, tags } => handle_home(message, tags)?,
-        Command::Play { message, tags } => handle_play(message, tags)?,
-        Command::Work { message, tags } => handle_work(message, tags)?,
-        Command::Log { arg } => handle_log(arg)?,
         Command::Logout => handle_logout()?,
-        Command::Talk { message } => handle_talk(message)?,
-
-        Command::Today => handle_today()?,
-
+        Command::Break { message } => handle_break(message)?,
+        
+        // supports Tags
+        Command::Home { message, tags } => handle_command("home", message, Some(tags))?,
+        Command::Play { message, tags } => handle_command("play", message, Some(tags))?,
+        Command::Work { message, tags } => handle_command("work", message, Some(tags))?,
+        
+        // does not support Tags
+        Command::Mood { message } => handle_command("mood", message, None)?,
+        Command::Note { message } => handle_command("note", message, None)?,
+        Command::Talk { message } => handle_command("talk", message, None)?,
+        
         // Manage Projects
         Command::Project { action } => match action {
             ProjectAction::Ls => entity::Project::list()?,
@@ -296,92 +301,6 @@ fn handle_break(message: Option<String>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn handle_home(message: String, tags: Tags) -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-    let vault = Path::new(&registry.vault.path);
-    let now = Local::now();
-
-    let mut line = format!(
-        "{}|home|{}",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
-        message
-    );
-    let tag_list = tags.to_vec();
-    if !tag_list.is_empty() {
-        line.push_str(&format!("|tags={}", tag_list.join(",")));
-    }
-
-    weekly::append_log(vault, &line)?;
-    Ok(())
-}
-
-
-fn handle_play(message: String, tags: Tags) -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-    let vault = Path::new(&registry.vault.path);
-    let now = Local::now();
-
-    let mut line = format!(
-        "{}|play|{}",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
-        message
-    );
-    let tag_list = tags.to_vec();
-    if !tag_list.is_empty() {
-        line.push_str(&format!("|tags={}", tag_list.join(",")));
-    }
-
-    weekly::append_log(vault, &line)?;
-    Ok(())
-}
-
-fn handle_work(message: String, tags: Tags) -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-    let vault = Path::new(&registry.vault.path);
-    let now = Local::now();
-
-    let mut line = format!(
-        "{}|work|{}",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
-        message
-    );
-    let tag_list = tags.to_vec();
-    if !tag_list.is_empty() {
-        line.push_str(&format!("|tags={}", tag_list.join(",")));
-    }
-
-    weekly::append_log(vault, &line)?;
-    Ok(())
-}
-
-fn handle_note(message: String) -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-    let vault = Path::new(&registry.vault.path);
-    let now = Local::now();
-
-    let line = format!(
-        "{}|note|{}",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
-        message
-    );
-    weekly::append_log(vault, &line)?;
-    Ok(())
-}
-
-fn handle_talk(message: String) -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-    let vault = Path::new(&registry.vault.path);
-    let now = Local::now();
-
-    let line = format!(
-        "{}|talk|{}",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
-        message
-    );
-    weekly::append_log(vault, &line)?;
-    Ok(())
-}
-
 fn handle_log(arg: String) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
@@ -412,6 +331,29 @@ fn handle_log(arg: String) -> Result<(), Box<dyn Error>> {
         println!("{}", line);
     }
 
+    Ok(())
+}
+
+fn handle_command(category: &str, message: String, tags: Option<Tags>) -> Result<(), Box<dyn Error>> {
+    let registry = registry::Registry::load()?;
+    let vault = Path::new(&registry.vault.path);
+    let now = Local::now();
+
+    let mut line: String = format!(
+        "{}|{}|{}",
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
+        category,
+        message
+    );
+
+    if let Some(tags) = tags {
+        let tag_list = tags.to_vec();
+        if !tag_list.is_empty() {
+            line.push_str(&format!("|tags={}", tag_list.join(",")));
+        }
+    }
+    
+    weekly::append_log(vault, &line)?;
     Ok(())
 }
 

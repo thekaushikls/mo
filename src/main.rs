@@ -105,6 +105,8 @@ struct Tags {
     #[arg(long)]
     meeting: bool,
     #[arg(long)]
+    note: bool,
+    #[arg(long)]
     now: bool,
     #[arg(long)]
     research: bool,
@@ -130,6 +132,9 @@ impl Tags {
         }
         if self.meeting {
             tags.push("meeting");
+        }
+        if self.note {
+            tags.push("note");
         }
         if self.now {
             tags.push("now");

@@ -53,7 +53,7 @@ enum Command {
     Talk { message: String },
 
     /// Something that is fun
-    Play { 
+    Play {
         message: String,
         #[command(flatten)]
         tags: Tags,
@@ -136,7 +136,7 @@ impl Tags {
         if self.now {
             tags.push("now");
         }
-        if self.research{
+        if self.research {
             tags.push("research");
         }
         if self.todo {
@@ -189,7 +189,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
 
     match cli.command {
-        // Meta Config 
+        // Meta Config
         Command::Completions { shell } => {
             generate(shell, &mut Cli::command(), "mo", &mut stdout());
         }
@@ -200,16 +200,16 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Login { mood } => handle_login(mood)?,
         Command::Logout => handle_logout()?,
         Command::Break { message } => handle_break(message)?,
-        
+
         // supports Tags
         Command::Home { message, tags } => handle_command("home", message, Some(tags))?,
         Command::Play { message, tags } => handle_command("play", message, Some(tags))?,
         Command::Work { message, tags } => handle_command("work", message, Some(tags))?,
-        
+
         // does not support Tags
         Command::Mood { message } => handle_command("mood", message, None)?,
         Command::Talk { message } => handle_command("talk", message, None)?,
-        
+
         // Manage Projects
         Command::Project { action } => match action {
             ProjectAction::Ls => entity::Project::list()?,
@@ -316,7 +316,11 @@ fn handle_log(arg: String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn handle_command(category: &str, message: String, tags: Option<Tags>) -> Result<(), Box<dyn Error>> {
+fn handle_command(
+    category: &str,
+    message: String,
+    tags: Option<Tags>,
+) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
@@ -334,7 +338,7 @@ fn handle_command(category: &str, message: String, tags: Option<Tags>) -> Result
             line.push_str(&format!("|tags={}", tag_list.join(",")));
         }
     }
-    
+
     weekly::append_log(vault, &line)?;
     Ok(())
 }
@@ -346,7 +350,8 @@ fn handle_today() -> Result<(), Box<dyn Error>> {
 
     let date_str = Local::now().format("%Y-%m-%d").to_string();
     let all = weekly::read_lines(vault, usize::MAX)?;
-    let _lines: Vec<String> = all.into_iter()
+    let _lines: Vec<String> = all
+        .into_iter()
         .filter(|l| l.starts_with(&date_str))
         .collect();
 
@@ -356,31 +361,35 @@ fn handle_today() -> Result<(), Box<dyn Error>> {
     // 3 -> flags (ignoring for now) | optional
 
     const LINE_LENGTH: usize = 55; //TODO: Move to global config. This should be user-configurable.
-    println!("");
+    println!();
     for line in &_lines {
         let parts: Vec<&str> = line.split('|').collect();
         let time_str = &parts[0][11..16];
         let type_str = parts[1];
-        
+
         let comment_str = if parts.len() > 2 {
             if parts[2].len() > LINE_LENGTH {
                 // TODO: Refactor, parts[2].len() being called multiple times.
                 let _slice = parts[2].len().min(LINE_LENGTH);
                 // TODO: ({} more) should be changed to count words instead of characters.
-                format!(": {}... ({} more)", &parts[2][.._slice], parts[2].len() - LINE_LENGTH)
+                format!(
+                    ": {}... ({} more)",
+                    &parts[2][.._slice],
+                    parts[2].len() - LINE_LENGTH
+                )
             } else {
                 // TODO: Remove the ':', needs to be placed conditionally - if comments exist.
-                format!(": {}", parts[2].to_string())
+                format!(": {}", parts[2])
             }
         } else {
             String::new()
         };
 
-        // TODO: Remove hardcoded value '8' for fixed width. Either all "type" strings should be 
+        // TODO: Remove hardcoded value '8' for fixed width. Either all "type" strings should be
         // 4 letters (prefereable), or should be calculated dynamically, before the print-loop.
         println!("{time_str:} {type_str:<8}{comment_str}");
     }
-    println!("");
+    println!();
 
     Ok(())
 }

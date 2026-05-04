@@ -39,6 +39,13 @@ enum Command {
     /// Start / Stop a break
     Break { message: Option<String> },
 
+    /// House chores
+    Home {
+        message: String,
+        #[command(flatten)]
+        tags: Tags,
+    },
+
     /// How are you feeling?
     Mood { mood: String },
 
@@ -188,6 +195,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Command::Mood { mood } => handle_mood(mood)?,
         Command::Break { message } => handle_break(message)?,
         Command::Note { message } => handle_note(message)?,
+        Command::Home { message, tags } => handle_home(message, tags)?,
         Command::Play { message, tags } => handle_play(message, tags)?,
         Command::Work { message, tags } => handle_work(message, tags)?,
         Command::Log { arg } => handle_log(arg)?,
@@ -282,6 +290,26 @@ fn handle_break(message: Option<String>) -> Result<(), Box<dyn Error>> {
     weekly::append_log(vault, &line)?;
     Ok(())
 }
+
+fn handle_home(message: String, tags: Tags) -> Result<(), Box<dyn Error>> {
+    let registry = registry::Registry::load()?;
+    let vault = Path::new(&registry.vault.path);
+    let now = Local::now();
+
+    let mut line = format!(
+        "{}|home|{}",
+        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
+        message
+    );
+    let tag_list = tags.to_vec();
+    if !tag_list.is_empty() {
+        line.push_str(&format!("|tags={}", tag_list.join(",")));
+    }
+
+    weekly::append_log(vault, &line)?;
+    Ok(())
+}
+
 
 fn handle_play(message: String, tags: Tags) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;

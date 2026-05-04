@@ -52,14 +52,14 @@ enum Command {
     Play { 
         message: String,
         #[command(flatten)]
-        tags: WorkFlags,
+        tags: Tags,
     },
 
     /// Add a work entry
     Work {
         message: String,
         #[command(flatten)]
-        tags: WorkFlags,
+        tags: Tags,
     },
 
     /// Show recent entries (default: 5)
@@ -88,7 +88,7 @@ enum Command {
 }
 
 #[derive(clap::Args)]
-struct WorkFlags {
+struct Tags {
     #[arg(long)]
     blocked: bool,
     #[arg(long)]
@@ -109,7 +109,7 @@ struct WorkFlags {
     urgent: bool,
 }
 
-impl WorkFlags {
+impl Tags {
     fn to_vec(&self) -> Vec<&str> {
         let mut tags = Vec::new();
         if self.blocked {
@@ -283,7 +283,7 @@ fn handle_break(message: Option<String>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn handle_play(message: String, tags: WorkFlags) -> Result<(), Box<dyn Error>> {
+fn handle_play(message: String, tags: Tags) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();
@@ -302,7 +302,7 @@ fn handle_play(message: String, tags: WorkFlags) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn handle_work(message: String, tags: WorkFlags) -> Result<(), Box<dyn Error>> {
+fn handle_work(message: String, tags: Tags) -> Result<(), Box<dyn Error>> {
     let registry = registry::Registry::load()?;
     let vault = Path::new(&registry.vault.path);
     let now = Local::now();

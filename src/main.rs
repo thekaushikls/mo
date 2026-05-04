@@ -52,9 +52,6 @@ enum Command {
     /// Talk about feedback and/or bug reports
     Talk { message: String },
 
-    /// Jot down a note
-    Note { message: String },
-
     /// Something that is fun
     Play { 
         message: String,
@@ -211,7 +208,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         
         // does not support Tags
         Command::Mood { message } => handle_command("mood", message, None)?,
-        Command::Note { message } => handle_command("note", message, None)?,
         Command::Talk { message } => handle_command("talk", message, None)?,
         
         // Manage Projects

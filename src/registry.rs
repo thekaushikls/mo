@@ -17,6 +17,24 @@ pub struct Registry {
 }
 
 impl Registry {
+    pub fn create(path: String) -> Result<(), Box<dyn Error>> {
+        let registry_path = PathBuf::from("mo.toml");
+
+        if registry_path.exists() {
+            println!("mo.toml already exists");
+        } else {
+            fs::create_dir_all(&path)?;
+            let registry = Registry {
+            vault: VaultConfig { path },
+            ..Default::default()
+            };
+            registry.save()?;
+            println!("Created registry at: {}", registry_path.display());
+        };
+
+        Ok(())
+    }
+
     pub fn load() -> Result<Registry, Box<dyn Error>> {
         let local = PathBuf::from("mo.toml");
         let global = dirs::config_dir()
@@ -40,6 +58,11 @@ impl Registry {
         let contents = toml::to_string_pretty(self)?;
         fs::write("mo.toml", contents)?;
         Ok(())
+    }
+
+    pub fn vault_path() -> Result<PathBuf, Box<dyn Error>> {
+        let registry = Self::load()?;
+        Ok(PathBuf::from(registry.vault.path))
     }
 
     pub fn find_project(&self, name: &str) -> Option<&Project> {

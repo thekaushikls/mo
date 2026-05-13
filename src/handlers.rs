@@ -1,36 +1,18 @@
-use crate::{cli, registry, weekly};
+use std::{error::Error};
 use chrono::Local;
 use cli::Tags;
-use std::{error::Error, fs, path::Path};
-
-// All Handlers
+use crate::{cli, registry, weekly};
 
 pub fn handle_init(path: String) -> Result<(), Box<dyn Error>> {
-    let registry_path = Path::new("mo.toml");
-
-    if registry_path.exists() {
-        println!("mo.toml already exists at");
-    } else {
-        fs::create_dir_all(&path)?;
-        let registry = registry::Registry {
-            vault: registry::VaultConfig { path },
-            ..Default::default()
-        };
-
-        registry.save()?;
-        println!("Created registry at: {}", registry_path.display());
-    }
-
-    Ok(())
+    registry::Registry::create(path)
 }
 
 pub fn handle_login(mood: Option<String>) -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-    let vault = Path::new(&registry.vault.path);
+    let vault = registry::Registry::vault_path()?;
     let now = Local::now();
 
     let line = format!("{}|login", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"));
-    weekly::append_log(vault, &line)?;
+    weekly::append_log(&vault, &line)?;
     println!("Welcome back!");
 
     if let Some(mood) = mood {
@@ -41,8 +23,7 @@ pub fn handle_login(mood: Option<String>) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn handle_break(message: Option<String>) -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-    let vault = Path::new(&registry.vault.path);
+    let vault = registry::Registry::vault_path()?;
     let now = Local::now();
 
     if let Some(message) = message {
@@ -51,34 +32,33 @@ pub fn handle_break(message: Option<String>) -> Result<(), Box<dyn Error>> {
             now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
             message
         );
-        weekly::append_log(vault, &line)?;
+        weekly::append_log(&vault, &line)?;
         return Ok(());
     }
 
     let line = format!("{}|break", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"));
-    weekly::append_log(vault, &line)?;
+    weekly::append_log(&vault, &line)?;
     Ok(())
 }
 
 pub fn handle_log(arg: String) -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-    let vault = Path::new(&registry.vault.path);
+    let vault = registry::Registry::vault_path()?;
 
     if arg.to_lowercase() == "file" {
         let today = Local::now().date_naive();
-        println!("{}", weekly::log_file_path(vault, today).display());
+        println!("{}", weekly::log_file_path(&vault, today).display());
         return Ok(());
     }
 
     let lines = if arg.to_lowercase() == "today" {
         let date_str = Local::now().format("%Y-%m-%d").to_string();
-        let all = weekly::read_lines(vault, usize::MAX)?;
+        let all = weekly::read_lines(&vault, usize::MAX)?;
         all.into_iter()
             .filter(|l| l.starts_with(&date_str))
             .collect()
     } else {
         let count: usize = arg.parse().unwrap_or(5);
-        weekly::read_lines(vault, count)?
+        weekly::read_lines(&vault, count)?
     };
 
     if lines.is_empty() {
@@ -98,8 +78,7 @@ pub fn handle_command(
     message: String,
     tags: Option<Tags>,
 ) -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-    let vault = Path::new(&registry.vault.path);
+    let vault = registry::Registry::vault_path()?;
     let now = Local::now();
 
     let mut line: String = format!(
@@ -116,17 +95,16 @@ pub fn handle_command(
         }
     }
 
-    weekly::append_log(vault, &line)?;
+    weekly::append_log(&vault, &line)?;
     Ok(())
 }
 
 // TODO: Move a separate struct.
 pub fn handle_today() -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-    let vault = Path::new(&registry.vault.path);
+    let vault = registry::Registry::vault_path()?;
 
     let date_str = Local::now().format("%Y-%m-%d").to_string();
-    let all = weekly::read_lines(vault, usize::MAX)?;
+    let all = weekly::read_lines(&vault, usize::MAX)?;
     let _lines: Vec<String> = all
         .into_iter()
         .filter(|l| l.starts_with(&date_str))
@@ -172,12 +150,11 @@ pub fn handle_today() -> Result<(), Box<dyn Error>> {
 }
 
 pub fn handle_logout() -> Result<(), Box<dyn Error>> {
-    let registry = registry::Registry::load()?;
-    let vault = Path::new(&registry.vault.path);
+    let vault = registry::Registry::vault_path()?;
     let now = Local::now();
 
     let line = format!("{}|logout", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"));
-    weekly::append_log(vault, &line)?;
+    weekly::append_log(&vault, &line)?;
     println!("Goodbye!");
     Ok(())
 }

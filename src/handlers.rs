@@ -1,7 +1,7 @@
-use std::{error::Error};
+use crate::{cli, registry, weekly};
 use chrono::Local;
 use cli::Tags;
-use crate::{cli, registry, weekly};
+use std::error::Error;
 
 pub fn handle_init(path: String) -> Result<(), Box<dyn Error>> {
     registry::Registry::create(path)
@@ -9,9 +9,8 @@ pub fn handle_init(path: String) -> Result<(), Box<dyn Error>> {
 
 pub fn handle_login(mood: Option<String>) -> Result<(), Box<dyn Error>> {
     let vault = registry::Registry::vault_path()?;
-    let now = Local::now();
 
-    let line = format!("{}|login", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"));
+    let line = format!("{}|login", timestamp());
     weekly::append_log(&vault, &line)?;
     println!("Welcome back!");
 
@@ -24,19 +23,14 @@ pub fn handle_login(mood: Option<String>) -> Result<(), Box<dyn Error>> {
 
 pub fn handle_break(message: Option<String>) -> Result<(), Box<dyn Error>> {
     let vault = registry::Registry::vault_path()?;
-    let now = Local::now();
 
     if let Some(message) = message {
-        let line = format!(
-            "{}|break|{}",
-            now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
-            message
-        );
+        let line = format!("{}|break|{}", timestamp(), message);
         weekly::append_log(&vault, &line)?;
         return Ok(());
     }
 
-    let line = format!("{}|break", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"));
+    let line = format!("{}|break", timestamp());
     weekly::append_log(&vault, &line)?;
     Ok(())
 }
@@ -79,14 +73,8 @@ pub fn handle_command(
     tags: Option<Tags>,
 ) -> Result<(), Box<dyn Error>> {
     let vault = registry::Registry::vault_path()?;
-    let now = Local::now();
 
-    let mut line: String = format!(
-        "{}|{}|{}",
-        now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"),
-        category,
-        message
-    );
+    let mut line: String = format!("{}|{}|{}", timestamp(), category, message);
 
     if let Some(tags) = tags {
         let tag_list = tags.to_vec();
@@ -151,10 +139,13 @@ pub fn handle_today() -> Result<(), Box<dyn Error>> {
 
 pub fn handle_logout() -> Result<(), Box<dyn Error>> {
     let vault = registry::Registry::vault_path()?;
-    let now = Local::now();
 
-    let line = format!("{}|logout", now.format("%Y-%m-%dT%H:%M:%S%.9f%:z"));
+    let line = format!("{}|logout", timestamp());
     weekly::append_log(&vault, &line)?;
     println!("Goodbye!");
     Ok(())
+}
+
+fn timestamp() -> String {
+    Local::now().format("%Y-%m-%dT%H:%M:%S%.9f%:z").to_string()
 }

@@ -4,10 +4,10 @@ mod handlers;
 mod registry;
 mod weekly;
 
-use std::{error::Error, io::stdout};
 use clap::{CommandFactory, Parser};
 use clap_complete::generate;
 use cli::{Cli, Command, PeopleAction, ProjectAction};
+use std::{error::Error, io::stdout};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();

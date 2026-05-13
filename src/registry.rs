@@ -25,8 +25,8 @@ impl Registry {
         } else {
             fs::create_dir_all(&path)?;
             let registry = Registry {
-            vault: VaultConfig { path },
-            ..Default::default()
+                vault: VaultConfig { path },
+                ..Default::default()
             };
             registry.save()?;
             println!("Created registry at: {}", registry_path.display());

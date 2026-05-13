@@ -2,7 +2,11 @@ use clap::{Parser, Subcommand};
 use clap_complete::Shell;
 
 #[derive(Parser)]
-#[command(name = "mo", about = "CLI tool to log work", version)]
+#[command(
+    name = "mo",
+    about = "\n\nA work journal that takes seconds, not minutes",
+    version
+)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Command,

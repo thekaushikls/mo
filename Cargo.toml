@@ -1,7 +1,13 @@
 [package]
-name = "mo"
-version = "0.3.0"
+name = "mo-cli"
+description = "A work journal that takes seconds, not minutes"
+version = "0.4.0"
 edition = "2024"
+
+[[bin]]
+name = "mo"
+path = "src/main.rs"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }

@@ -42,10 +42,11 @@ Tags are supported on `work`, `home`, and `play` commands.
 ## Viewing Logs
 
 ```bash
-mo log              # last 5 entries (formatted)
-mo log 20           # last 20 entries
-mo log today        # today's entries only
-mo log file         # print current log file path
+mo today             # formatted view of today's entries
+mo log               # last 5 entries (raw)
+mo log 20            # last 20 entries
+mo log today         # today's entries (raw)
+mo log file          # print current log file path
 ```
 
 ## Entity Management

@@ -107,7 +107,7 @@ pub fn handle_today() -> Result<(), Box<dyn Error>> {
     println!();
     for line in &_lines {
         let parts: Vec<&str> = line.split('|').collect();
-        let time_str = &parts[0][11..16];
+        let time_str = &parts[0][11..16]; //TODO: Fix unsafe slicing
         let type_str = parts[1];
 
         let comment_str = if parts.len() > 2 {

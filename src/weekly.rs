@@ -1,5 +1,5 @@
 use chrono::{Datelike, Duration, Local, NaiveDate};
-use std::{error::Error, fs, path::Path, path::PathBuf};
+use std::{error::Error, fs, fs::OpenOptions, io::Write, path::Path, path::PathBuf};
 
 /// Get Monday from current ISO week
 fn week_monday(date: NaiveDate) -> NaiveDate {
@@ -19,8 +19,6 @@ pub fn append_log(vault: &Path, line: &str) -> Result<(), Box<dyn Error>> {
     let path = log_file_path(vault, today);
     fs::create_dir_all(path.parent().unwrap())?;
 
-    use std::fs::OpenOptions;
-    use std::io::Write;
     let mut file = OpenOptions::new().create(true).append(true).open(&path)?;
 
     writeln!(file, "{}", line)?;

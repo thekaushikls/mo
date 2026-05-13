@@ -1,6 +1,6 @@
 <img src="assets/logo.png" height="150px" alt="Mo - tools to get the job done"/>
 
-# `mo` &mdash; CLI tools to get the job done
+# `mo`
 A work journal that takes seconds, not minutes.
 
 ## Setup

@@ -2,7 +2,7 @@ use crate::entity::{Person, Project};
 use serde::{Deserialize, Serialize};
 use std::{error::Error, fs, path::PathBuf};
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Vault {
     #[serde(default = "default_version")]
     pub version: String,
@@ -57,7 +57,11 @@ impl Vault {
     }
 
     pub fn save(&self) -> Result<(), Box<dyn Error>> {
-        let contents = toml::to_string_pretty(self)?;
+        let mut vault = self.clone();
+        vault.people.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        vault.projects.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        
+        let contents = toml::to_string_pretty(&vault)?;
         fs::write("mo.toml", contents)?;
         Ok(())
     }

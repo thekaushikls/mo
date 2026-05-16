@@ -1,4 +1,4 @@
-use crate::registry::Registry;
+use crate::registry::Vault;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 
@@ -17,7 +17,7 @@ fn default_status() -> String {
 
 impl Project {
     pub fn add(name: String, aliases: Vec<String>) -> Result<(), Box<dyn Error>> {
-        let mut registry = Registry::load()?;
+        let mut registry = Vault::load()?;
 
         if registry.find_project(&name).is_some() {
             println!("Project {} already exists.", name);
@@ -37,7 +37,7 @@ impl Project {
     }
 
     pub fn list() -> Result<(), Box<dyn Error>> {
-        let registry = Registry::load()?;
+        let registry = Vault::load()?;
 
         if registry.projects.is_empty() {
             println!("No projects");
@@ -61,7 +61,7 @@ pub struct Person {
 
 impl Person {
     pub fn add(name: String, aliases: Vec<String>) -> Result<(), Box<dyn Error>> {
-        let mut registry = Registry::load()?;
+        let mut registry = Vault::load()?;
 
         if registry.find_person(&name).is_some() {
             println!("Person {} already exists.", name);
@@ -80,7 +80,7 @@ impl Person {
     }
 
     pub fn list() -> Result<(), Box<dyn Error>> {
-        let registry = Registry::load()?;
+        let registry = Vault::load()?;
 
         if registry.people.is_empty() {
             println!("No people");

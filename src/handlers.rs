@@ -4,11 +4,11 @@ use cli::Tags;
 use std::error::Error;
 
 pub fn handle_init(path: String) -> Result<(), Box<dyn Error>> {
-    registry::Registry::create(path)
+    registry::Vault::create(path)
 }
 
 pub fn handle_login(mood: Option<String>) -> Result<(), Box<dyn Error>> {
-    let vault = registry::Registry::vault_path()?;
+    let vault = registry::Vault::vault_path()?;
 
     let line = format!("{}|login", timestamp());
     weekly::append_log(&vault, &line)?;
@@ -22,7 +22,7 @@ pub fn handle_login(mood: Option<String>) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn handle_break(message: Option<String>) -> Result<(), Box<dyn Error>> {
-    let vault = registry::Registry::vault_path()?;
+    let vault = registry::Vault::vault_path()?;
 
     if let Some(message) = message {
         let line = format!("{}|break|{}", timestamp(), message);
@@ -36,7 +36,7 @@ pub fn handle_break(message: Option<String>) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn handle_log(arg: String) -> Result<(), Box<dyn Error>> {
-    let vault = registry::Registry::vault_path()?;
+    let vault = registry::Vault::vault_path()?;
 
     if arg.to_lowercase() == "file" {
         let today = Local::now().date_naive();
@@ -72,7 +72,7 @@ pub fn handle_command(
     message: String,
     tags: Option<Tags>,
 ) -> Result<(), Box<dyn Error>> {
-    let vault = registry::Registry::vault_path()?;
+    let vault = registry::Vault::vault_path()?;
 
     let mut line: String = format!("{}|{}|{}", timestamp(), category, message);
 
@@ -89,7 +89,7 @@ pub fn handle_command(
 
 // TODO: Move a separate struct.
 pub fn handle_today() -> Result<(), Box<dyn Error>> {
-    let vault = registry::Registry::vault_path()?;
+    let vault = registry::Vault::vault_path()?;
 
     let date_str = Local::now().format("%Y-%m-%d").to_string();
     let all = weekly::read_lines(&vault, usize::MAX)?;
@@ -138,7 +138,7 @@ pub fn handle_today() -> Result<(), Box<dyn Error>> {
 }
 
 pub fn handle_logout() -> Result<(), Box<dyn Error>> {
-    let vault = registry::Registry::vault_path()?;
+    let vault = registry::Vault::vault_path()?;
 
     let line = format!("{}|logout", timestamp());
     weekly::append_log(&vault, &line)?;

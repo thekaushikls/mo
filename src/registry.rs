@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::{error::Error, fs, path::PathBuf};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub struct Registry {
+pub struct Vault {
     pub path: PathBuf,
     #[serde(default)]
     pub projects: Vec<Project>,
@@ -11,26 +11,26 @@ pub struct Registry {
     pub people: Vec<Person>,
 }
 
-impl Registry {
+impl Vault {
     pub fn create(path: String) -> Result<(), Box<dyn Error>> {
-        let registry_path = PathBuf::from("mo.toml");
+        let vault_path = PathBuf::from("mo.toml");
 
-        if registry_path.exists() {
+        if vault_path.exists() {
             println!("mo.toml already exists");
         } else {
             fs::create_dir_all(&path)?;
-            let registry = Registry {
+            let vault = Vault {
                 path: PathBuf::from(&path),
                 ..Default::default()
             };
-            registry.save()?;
-            println!("Created registry at: {}", path);
+            vault.save()?;
+            println!("Created vault at: {}", path);
         };
 
         Ok(())
     }
 
-    pub fn load() -> Result<Registry, Box<dyn Error>> {
+    pub fn load() -> Result<Vault, Box<dyn Error>> {
         let local = PathBuf::from("mo.toml");
         let global = dirs::config_dir()
             .map(|d| d.join("mo").join("mo.toml"))
@@ -45,8 +45,8 @@ impl Registry {
         };
 
         let contents = fs::read_to_string(&path)?;
-        let registry: Registry = toml::from_str(&contents)?;
-        Ok(registry)
+        let vault: Vault = toml::from_str(&contents)?;
+        Ok(vault)
     }
 
     pub fn save(&self) -> Result<(), Box<dyn Error>> {
@@ -56,8 +56,8 @@ impl Registry {
     }
 
     pub fn vault_path() -> Result<PathBuf, Box<dyn Error>> {
-        let registry = Self::load()?;
-        Ok(PathBuf::from(registry.path))
+        let vault = Self::load()?;
+        Ok(PathBuf::from(vault.path))
     }
 
     pub fn find_project(&self, name: &str) -> Option<&Project> {

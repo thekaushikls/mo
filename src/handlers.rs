@@ -1,5 +1,5 @@
 use crate::{cli, config, store};
-use chrono::Local;
+use chrono::{Datelike, Duration, Local};
 use cli::Tags;
 use std::error::Error;
 
@@ -37,32 +37,61 @@ pub fn handle_break(message: Option<String>) -> Result<(), Box<dyn Error>> {
 
 pub fn handle_log(arg: String) -> Result<(), Box<dyn Error>> {
     let vault = config::Vault::vault_path()?;
+    let lines: Vec<String>;
 
-    if arg.to_lowercase() == "file" {
-        let today = Local::now().date_naive();
-        println!("{}", store::log_file_path(&vault, today).display());
-        return Ok(());
-    }
-
-    let lines = if arg.to_lowercase() == "today" {
-        let date_str = Local::now().format("%Y-%m-%d").to_string();
-        let all = store::read_lines(&vault, usize::MAX)?;
-        all.into_iter()
-            .filter(|l| l.starts_with(&date_str))
-            .collect()
+    if let Ok(n) = arg.parse::<usize>() {
+        lines = store::read_lines(&vault, n)?;
     } else {
-        let count: usize = arg.parse().unwrap_or(5);
-        store::read_lines(&vault, count)?
-    };
-
+        let today = Local::now().date_naive();
+        let arg = arg.to_lowercase();
+        lines = match arg.as_str() {
+            "file" => {
+                println!("{}", store::get_file(&vault, today).display());
+                return Ok(());
+            },
+            "today" => {
+                store::read_lines_by_date_range(&vault, today, today)?
+            },
+            "month" => {
+                // TODO: Can move to dedicated (extension) Trait + Impl
+                let start_date = today.with_day(1).unwrap();
+                // println!("Start: {}", start_date);
+                let end_date = start_date + chrono::Months::new(1) - Duration::days(1); // +1 Month -1 Day to get last day of the month
+                store::read_lines_by_date_range(&vault, start_date, end_date)?
+            },
+            _ => {
+                return Err(format!("Invalid argument: {}", arg).into());
+            },
+        };
+    }
+    
     if lines.is_empty() {
-        println!("No entries this week.");
-        return Ok(());
+        println!("No entries found!");
+    } else {
+        for line in &lines {
+            println!("{}", line);
+        }
     }
+    
+    // let lines = if arg.to_lowercase() == "today" {
+    //     let date_str = Local::now().format("%Y-%m-%d").to_string();
+    //     let all = store::read_lines(&vault, usize::MAX)?;
+    //     all.into_iter()
+    //         .filter(|l| l.starts_with(&date_str))
+    //         .collect()
+    // } else {
+    //     let count: usize = arg.parse().unwrap_or(5);
+    //     store::read_lines(&vault, count)?
+    // };
 
-    for line in &lines {
-        println!("{}", line);
-    }
+    // if lines.is_empty() {
+    //     println!("No entries this week.");
+    //     return Ok(());
+    // }
+
+    // for line in &lines {
+    //     println!("{}", line);
+    // }
 
     Ok(())
 }

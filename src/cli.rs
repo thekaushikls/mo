@@ -146,6 +146,7 @@ impl Tags {
         if self.urgent {
             tags.push("urgent");
         }
+        tags.sort();
 
         tags
     }

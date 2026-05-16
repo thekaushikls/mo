@@ -14,11 +14,11 @@ pub fn log_file_path(vault: &Path, date: NaiveDate) -> PathBuf {
 }
 
 /// Append to log file
-pub fn append_log(vault: &Path, line: &str) -> Result<(), Box<dyn Error>> {
+pub fn append_line(vault: &Path, line: &str) -> Result<(), Box<dyn Error>> {
     let today = Local::now().date_naive();
-    let path = log_file_path(vault, today);
-    fs::create_dir_all(path.parent().unwrap())?;
+    let path = get_file(vault, today);
 
+    fs::create_dir_all(path.parent().unwrap())?;
     let mut file = OpenOptions::new().create(true).append(true).open(&path)?;
 
     writeln!(file, "{}", line)?;

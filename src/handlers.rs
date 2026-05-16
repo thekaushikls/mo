@@ -11,7 +11,7 @@ pub fn handle_login(mood: Option<String>) -> Result<(), Box<dyn Error>> {
     let vault = config::Vault::vault_path()?;
 
     let line = format!("{}|login", timestamp());
-    store::append_log(&vault, &line)?;
+    store::append_line(&vault, &line)?;
     println!("Welcome back!");
 
     if let Some(mood) = mood {
@@ -26,12 +26,12 @@ pub fn handle_break(message: Option<String>) -> Result<(), Box<dyn Error>> {
 
     if let Some(message) = message {
         let line = format!("{}|break|{}", timestamp(), message);
-        store::append_log(&vault, &line)?;
+        store::append_line(&vault, &line)?;
         return Ok(());
     }
 
     let line = format!("{}|break", timestamp());
-    store::append_log(&vault, &line)?;
+    store::append_line(&vault, &line)?;
     Ok(())
 }
 
@@ -83,7 +83,7 @@ pub fn handle_command(
         }
     }
 
-    store::append_log(&vault, &line)?;
+    store::append_line(&vault, &line)?;
     Ok(())
 }
 
@@ -141,7 +141,7 @@ pub fn handle_logout() -> Result<(), Box<dyn Error>> {
     let vault = config::Vault::vault_path()?;
 
     let line = format!("{}|logout", timestamp());
-    store::append_log(&vault, &line)?;
+    store::append_line(&vault, &line)?;
     println!("Goodbye!");
     Ok(())
 }

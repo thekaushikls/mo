@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.5.0 - 2026-05-16
+
+### Breaking Changes
+
+- `mo.toml` schema changed: the `[vault]` section is retired. `path` and `version` are now top-level fields. Existing `mo.toml` files need to be updated manually or re-initialized with `mo init`
+
+### New Commands
+
+- `mo log month` - View all entries for the current month (spans across weekly log files)
+
+### Improvements
+
+- Tags are now always sorted alphabetically in log entries
+- Projects and people are sorted alphabetically when saved to `mo.toml`
+- `mo.toml` now includes a `version` field (set to current `mo` version on init)
+- Date-range filtering for log queries (supports multi-week spans)
+
+### Internal
+
+- Renamed `registry.rs` → `config.rs`, struct `Registry` → `Vault`
+- Renamed `weekly.rs` → `store.rs`, `append_log` → `append_line`
+- New `store::get_files()` and `store::read_lines_by_date_range()` for multi-week queries
+
+---
+
 ## v0.4.0 - 2026-05-13
 
 ### Improvements

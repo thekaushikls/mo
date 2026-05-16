@@ -44,8 +44,9 @@ Tags are supported on `work`, `home`, and `play` commands.
 ```bash
 mo today             # formatted view of today's entries
 mo log               # last 5 entries (raw)
-mo log 20            # last 20 entries
+mo log 20            # last 20 entries (raw)
 mo log today         # today's entries (raw)
+mo log month         # current month's entries (raw)
 mo log file          # print current log file path
 ```
 
@@ -70,7 +71,7 @@ mo completions fish > ~/.config/fish/completions/mo.fish
 
 - Append-only `.log` files, one per ISO week (`logs/2026-W17.log`)
 - Pipe-delimited format, one record per line
-- Entity registry stored in `mo.toml` (projects, people with aliases)
+- Vault config stored in `mo.toml` (projects, people with aliases)
 - Config supports local (`./mo.toml`) and global (`~/.config/mo/mo.toml`) paths
 
 ## Builds

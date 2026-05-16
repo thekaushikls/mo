@@ -2,7 +2,7 @@ mod cli;
 mod entity;
 mod handlers;
 mod config;
-mod weekly;
+mod store;
 
 use clap::{CommandFactory, Parser};
 use clap_complete::generate;

@@ -1,7 +1,7 @@
 mod cli;
 mod entity;
 mod handlers;
-mod registry;
+mod config;
 mod weekly;
 
 use clap::{CommandFactory, Parser};

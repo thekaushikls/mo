@@ -1,4 +1,4 @@
-use crate::registry::Vault;
+use crate::config::Vault;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 

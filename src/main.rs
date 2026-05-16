@@ -1,7 +1,7 @@
 mod cli;
+mod config;
 mod entity;
 mod handlers;
-mod config;
 mod store;
 
 use clap::{CommandFactory, Parser};

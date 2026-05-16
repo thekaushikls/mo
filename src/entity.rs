@@ -32,7 +32,7 @@ impl Project {
         registry.projects.push(new_project);
         registry.save()?;
 
-        println!("Added project `{}`.", name);
+        println!("Added project: `{}`", name);
         Ok(())
     }
 
@@ -75,7 +75,7 @@ impl Person {
         registry.people.push(new_person);
         registry.save()?;
 
-        println!("Added person `{}`.", name);
+        println!("Added person: `{}`", name);
         Ok(())
     }
 

@@ -31,7 +31,7 @@ impl Vault {
                 ..Default::default()
             };
             vault.save()?;
-            println!("Created vault at: {}", path);
+            println!("Vault created successfully!");
         };
 
         Ok(())
@@ -58,9 +58,13 @@ impl Vault {
 
     pub fn save(&self) -> Result<(), Box<dyn Error>> {
         let mut vault = self.clone();
-        vault.people.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
-        vault.projects.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
-        
+        vault
+            .people
+            .sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        vault
+            .projects
+            .sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+
         let contents = toml::to_string_pretty(&vault)?;
         fs::write("mo.toml", contents)?;
         Ok(())
@@ -68,7 +72,7 @@ impl Vault {
 
     pub fn vault_path() -> Result<PathBuf, Box<dyn Error>> {
         let vault = Self::load()?;
-        Ok(PathBuf::from(vault.path))
+        Ok(vault.path)
     }
 
     pub fn find_project(&self, name: &str) -> Option<&Project> {

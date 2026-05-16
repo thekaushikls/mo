@@ -3,13 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::{error::Error, fs, path::PathBuf};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub struct VaultConfig {
-    pub path: String,
-}
-
-#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Registry {
-    pub vault: VaultConfig,
+    pub path: PathBuf,
     #[serde(default)]
     pub projects: Vec<Project>,
     #[serde(default)]
@@ -25,11 +20,11 @@ impl Registry {
         } else {
             fs::create_dir_all(&path)?;
             let registry = Registry {
-                vault: VaultConfig { path },
+                path: PathBuf::from(&path),
                 ..Default::default()
             };
             registry.save()?;
-            println!("Created registry at: {}", registry_path.display());
+            println!("Created registry at: {}", path);
         };
 
         Ok(())
@@ -62,7 +57,7 @@ impl Registry {
 
     pub fn vault_path() -> Result<PathBuf, Box<dyn Error>> {
         let registry = Self::load()?;
-        Ok(PathBuf::from(registry.vault.path))
+        Ok(PathBuf::from(registry.path))
     }
 
     pub fn find_project(&self, name: &str) -> Option<&Project> {

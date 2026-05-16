@@ -48,23 +48,21 @@ pub fn handle_log(arg: String) -> Result<(), Box<dyn Error>> {
             "file" => {
                 println!("{}", store::get_file(&vault, today).display());
                 return Ok(());
-            },
-            "today" => {
-                store::read_lines_by_date_range(&vault, today, today)?
-            },
+            }
+            "today" => store::read_lines_by_date_range(&vault, today, today)?,
             "month" => {
                 // TODO: Can move to dedicated (extension) Trait + Impl
                 let start_date = today.with_day(1).unwrap();
                 // println!("Start: {}", start_date);
                 let end_date = start_date + chrono::Months::new(1) - Duration::days(1); // +1 Month -1 Day to get last day of the month
                 store::read_lines_by_date_range(&vault, start_date, end_date)?
-            },
+            }
             _ => {
                 return Err(format!("Invalid argument: {}", arg).into());
-            },
+            }
         };
     }
-    
+
     if lines.is_empty() {
         println!("No entries found!");
     } else {
@@ -72,7 +70,7 @@ pub fn handle_log(arg: String) -> Result<(), Box<dyn Error>> {
             println!("{}", line);
         }
     }
-    
+
     // let lines = if arg.to_lowercase() == "today" {
     //     let date_str = Local::now().format("%Y-%m-%d").to_string();
     //     let all = store::read_lines(&vault, usize::MAX)?;

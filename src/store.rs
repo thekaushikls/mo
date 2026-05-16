@@ -26,7 +26,7 @@ pub fn get_files(vault: &Path, start_date: NaiveDate, end_date: NaiveDate) -> Ve
         week_start += Duration::days(7);
     }
 
-    return files;
+    files
 }
 
 /// Append to log file
@@ -65,8 +65,12 @@ pub fn read_lines(vault: &Path, count: usize) -> Result<Vec<String>, Box<dyn Err
 }
 
 // Read contents based on date range
-pub fn read_lines_by_date_range(vault: &Path, start_date: NaiveDate, end_date: NaiveDate) -> Result<Vec<String>, Box<dyn Error>> {
-    let paths = get_files(&vault, start_date, end_date);
+pub fn read_lines_by_date_range(
+    vault: &Path,
+    start_date: NaiveDate,
+    end_date: NaiveDate,
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let paths = get_files(vault, start_date, end_date);
     let mut log_lines: Vec<String> = Vec::new();
 
     for path in paths {
@@ -93,7 +97,7 @@ pub fn read_lines_by_date_range(vault: &Path, start_date: NaiveDate, end_date: N
                 false
             }
         })
-        .collect();
+        .collect(); // TODO: Use retain() instead
 
     Ok(log_lines.to_vec())
 }
